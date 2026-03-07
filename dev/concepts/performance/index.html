@@ -4047,7 +4047,7 @@ to help you monitor and understand your
 
 
 <h1 id="performance-tips">Performance tips<a class="headerlink" href="#performance-tips" title="Permanent link">&para;</a></h1>
-<p>In most cases Pydantic won't be your bottle neck, only follow this if you're sure it's necessary.</p>
+<p>In most cases Pydantic won't be your bottleneck, only follow this if you're sure it's necessary.</p>
 <h2 id="in-general-use-model_validate_json-not-model_validatejsonloads">In general, use <code>model_validate_json()</code> not <code>model_validate(json.loads(...))</code><a class="headerlink" href="#in-general-use-model_validate_json-not-model_validatejsonloads" title="Permanent link">&para;</a></h2>
 <p>On <code>model_validate(json.loads(...))</code>, the JSON is parsed in Python, then converted to a dict, then it's validated internally.
 On the other hand, <code>model_validate_json()</code> already performs the validation internally.</p>
@@ -4292,7 +4292,7 @@ trading off visibility for performance.</p>
                 
   <script src="/flarelytics/client.js"></script>
       <script>
-    window.mkdocs_run_deps = ["https://docs.pydantic.dev/dev/pydantic-2.13.0a0+dev-py3-none-any.whl", "email-validator>=2.0.0", "pydantic-core==2.41.5", "pydantic-extra-types==2.10.6"]
+    window.mkdocs_run_deps = ["pydantic==2.13.0b2", "email-validator>=2.0.0", "pydantic-core==2.42.0", "pydantic-extra-types==2.10.6"]
     </script>
 
               </article>

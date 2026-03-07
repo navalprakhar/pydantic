@@ -2312,13 +2312,15 @@ def typed_dict_schema(self, schema: core_schema.TypedDictSchema) -> JsonSchemaVa
     # where you don't necessarily have a class.
     # At runtime, `extra_behavior` takes priority over the config
     # for validation, so follow the same for the JSON Schema:
+    if 'extras_schema' in schema and schema['extras_schema'] != core_schema.any_schema():
+        allow_additional_props = self.generate_inner(schema['extras_schema'])
+    else:
+        allow_additional_props = True
+
     if schema.get('extra_behavior') == 'forbid':
         json_schema['additionalProperties'] = False
     elif schema.get('extra_behavior') == 'allow':
-        if 'extras_schema' in schema and schema['extras_schema'] != {'type': 'any'}:
-            json_schema['additionalProperties'] = self.generate_inner(schema['extras_schema'])
-        else:
-            json_schema['additionalProperties'] = True
+        json_schema['additionalProperties'] = allow_additional_props
 
     if cls is not None:
         # `_update_class_schema()` will not override
@@ -2329,7 +2331,7 @@ def typed_dict_schema(self, schema: core_schema.TypedDictSchema) -> JsonSchemaVa
         if extra == 'forbid':
             json_schema['additionalProperties'] = False
         elif extra == 'allow':
-            json_schema['additionalProperties'] = True
+            json_schema['additionalProperties'] = allow_additional_props
 
     return json_schema
 
@@ -2780,24 +2782,14 @@ def dataclass_schema(self, schema: core_schema.DataclassSchema) -> JsonSchemaVal
     Returns:
         The generated JSON schema.
     """
-    from ._internal._dataclasses import is_stdlib_dataclass
 
     cls = schema['cls']
-    config: ConfigDict = getattr(cls, '__pydantic_config__', cast('ConfigDict', {}))
+    config = cast('ConfigDict', getattr(cls, '__pydantic_config__', {}))
 
     with self._config_wrapper_stack.push(config):
         json_schema = self.generate_inner(schema['schema']).copy()
 
     self._update_class_schema(json_schema, cls, config)
-
-    # Dataclass-specific handling of description
-    if is_stdlib_dataclass(cls):
-        # vanilla dataclass; don't use cls.__doc__ as it will contain the class signature by default
-        description = None
-    else:
-        description = None if cls.__doc__ is None else inspect.cleandoc(cls.__doc__)
-    if description:
-        json_schema['description'] = description
 
     return json_schema
 
