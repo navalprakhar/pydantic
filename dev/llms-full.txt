@@ -1958,6 +1958,8 @@ The `data` argument will *only* contain the already validated data, based on the
 
 Added in v2.10: Default factories can take already validated data as an argument.
 
+Added in v2.13: Default factories for [private attributes](../models/#private-model-attributes) can take the validated data as an argument.
+
 ## Validate default values
 
 By default, Pydantic will *not* validate default values. The `validate_default` field parameter (or the validate_default configuration value) can be used to enable this behavior:
@@ -3927,15 +3929,13 @@ We no longer (and never fully did) support composing a mix of `dict` and `callab
 
 ### `WithJsonSchema` annotation
 
-API Documentation
-
-pydantic.json_schema.WithJsonSchema
-
 Tip
 
-Using WithJsonSchema is preferred over [implementing `__get_pydantic_json_schema__`](#implementing_get_pydantic_json_schema) for custom types, as it's more simple and less error-prone.
+Using WithJsonSchema is preferred over [implementing `__get_pydantic_json_schema__()`](#implementing_get_pydantic_json_schema) for custom types, as it's more simple and less error-prone.
 
-The WithJsonSchema annotation can be used to override the generated (base) JSON schema for a given type without the need to implement `__get_pydantic_core_schema__` or `__get_pydantic_json_schema__` on the type itself. Note that this overrides the whole JSON Schema generation process for the field (in the following example, the `'type'` also needs to be provided).
+An annotation used to override the JSON Schema for a type.
+
+This is useful when you want to set a JSON Schema for a type that don't produce any JSON Schemas by default (e.g. Callable). Note that this overrides the whole generated JSON Schema for the type (in the following example, the `'type'` also needs to be provided).
 
 ```python
 import json
@@ -3980,6 +3980,8 @@ JSON output:
 }
 
 ```
+
+See the API documentation for more details.
 
 Note
 
@@ -6527,6 +6529,8 @@ print(m._secret_value)
 
 Private attribute names must start with underscore to prevent conflicts with model fields. However, dunder names (such as `__attr__`) are not supported, and will be completely ignored from the model definition.
 
+Added in v2.13: Default factories can take the validated model data as an argument.
+
 ## Model signature
 
 All Pydantic models will have their signature generated based on their fields:
@@ -7150,6 +7154,10 @@ Note
 
 Sub model has to inherit from `pydantic.BaseModel`, Otherwise `pydantic-settings` will initialize sub model, collects values for sub model fields separately, and you may get unexpected results.
 
+Note
+
+The `env_nested_delimiter` option applies only to variables that point to declared fields. If a variable points to an unknown field no conversion will take place.
+
 As an example, given the following environment variables:
 
 ```bash
@@ -7518,6 +7526,11 @@ Because python-dotenv is used to parse the file, bash-like semantics such as `ex
 
 Pydantic settings consider `extra` config in case of dotenv file. It means if you set the `extra=forbid` (*default*) on `model_config` and your dotenv file contains an entry for a field that is not defined in settings model, it will raise `ValidationError` in settings construction.
 
+This behaviour can be customized by using the setting `dotenv_filtering` that supports two additional alternative modes:
+
+- `'match_prefix'`: only the variables that match the prefix will be passed to the model. Useful when used in conjunction with `env_prefix` to "scope" a single dotenv file to a specific model.
+- `'only_existing'`: only the variables that have a corresponding field will be passed to the model. When using this option the dotenv setting source will behave like the env settings source.
+
 For compatibility with pydantic 1.x BaseSettings you should use `extra=ignore`:
 
 ```py
@@ -7531,7 +7544,7 @@ class Settings(BaseSettings):
 
 Note
 
-Pydantic settings loads all the values from dotenv file and passes it to the model, regardless of the model's `env_prefix`. So if you provide extra values in a dotenv file, whether they start with `env_prefix` or not, a `ValidationError` will be raised.
+Pydantic settings loads all the values from dotenv file and passes it to the model, regardless of the model's `env_prefix`, unless `dotenv_filtering` is used. So if you provide extra values in a dotenv file, whether they start with `env_prefix` or not, a `ValidationError` will be raised.
 
 ## Command Line Support
 
@@ -21207,7 +21220,7 @@ Parameters:
 
 Returns:
 
-| Type | Description | | --- | --- | | `Any` | The default value, calling the default factory if requested or None if not set. |
+| Type | Description | | --- | --- | | `Any` | The default value, calling the default factory if requested or PydanticUndefined if not set. |
 
 Source code in `pydantic/fields.py`
 
@@ -21224,23 +21237,14 @@ def get_default(self, *, call_default_factory: bool = False, validated_data: dic
         validated_data: The already validated data to be passed to the default factory.
 
     Returns:
-        The default value, calling the default factory if requested or `None` if not set.
+        The default value, calling the default factory if requested or `PydanticUndefined` if not set.
     """
-    if self.default_factory is None:
-        return _utils.smart_deepcopy(self.default)
-    elif call_default_factory:
-        if self.default_factory_takes_validated_data:
-            fac = cast('Callable[[dict[str, Any]], Any]', self.default_factory)
-            if validated_data is None:
-                raise ValueError(
-                    "The default factory requires the 'validated_data' argument, which was not provided when calling 'get_default'."
-                )
-            return fac(validated_data)
-        else:
-            fac = cast('Callable[[], Any]', self.default_factory)
-            return fac()
-    else:
-        return None
+    return _fields.resolve_default_value(
+        default=self.default,
+        default_factory=self.default_factory,
+        validated_data=validated_data,
+        call_default_factory=call_default_factory,
+    )
 
 ```
 
@@ -21317,7 +21321,9 @@ PrivateAttr(
 ```python
 PrivateAttr(
     *,
-    default_factory: Callable[[], _T],
+    default_factory: (
+        Callable[[], _T] | Callable[[dict[str, Any]], _T]
+    ),
     init: Literal[False] = False
 ) -> _T
 
@@ -21332,7 +21338,11 @@ PrivateAttr(*, init: Literal[False] = False) -> Any
 PrivateAttr(
     default: Any = PydanticUndefined,
     *,
-    default_factory: Callable[[], Any] | None = None,
+    default_factory: (
+        Callable[[], Any]
+        | Callable[[dict[str, Any]], Any]
+        | None
+    ) = None,
     init: Literal[False] = False
 ) -> Any
 
@@ -21350,7 +21360,7 @@ Private attributes are stored in `__private_attributes__` on the model.
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `default` | `Any` | The attribute's default value. Defaults to Undefined. | `PydanticUndefined` | | `default_factory` | `Callable[[], Any] | None` | Callable that will be called when a default value is needed for this attribute. If both default and default_factory are set, an error will be raised. | `None` | | `init` | `Literal[False]` | Whether the attribute should be included in the constructor of the dataclass. Always False. | `False` |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `default` | `Any` | The attribute's default value. Defaults to Undefined. | `PydanticUndefined` | | `default_factory` | `Callable[[], Any] | Callable[[dict[str, Any]], Any] | None` | A callable to generate the default value. The callable can either take 0 arguments (in which case it is called as is) or a single argument containing the validated data (the model's __dict__) and the already initialized private attributes. If both default and default_factory are set, an error will be raised. | `None` | | `init` | `Literal[False]` | Whether the attribute should be included in the constructor of the dataclass. Always False. | `False` |
 
 Returns:
 
@@ -21366,7 +21376,7 @@ Source code in `pydantic/fields.py`
 def PrivateAttr(
     default: Any = PydanticUndefined,
     *,
-    default_factory: Callable[[], Any] | None = None,
+    default_factory: Callable[[], Any] | Callable[[dict[str, Any]], Any] | None = None,
     init: Literal[False] = False,
 ) -> Any:
     """!!! abstract "Usage Documentation"
@@ -21380,8 +21390,9 @@ def PrivateAttr(
 
     Args:
         default: The attribute's default value. Defaults to Undefined.
-        default_factory: Callable that will be
-            called when a default value is needed for this attribute.
+        default_factory: A callable to generate the default value. The callable can either take 0 arguments
+            (in which case it is called as is) or a single argument containing the validated data (the model's
+            [`__dict__`][object.__dict__]) and the already initialized private attributes.
             If both `default` and `default_factory` are set, an error will be raised.
         init: Whether the attribute should be included in the constructor of the dataclass. Always `False`.
 
@@ -21407,7 +21418,11 @@ def PrivateAttr(
 ModelPrivateAttr(
     default: Any = PydanticUndefined,
     *,
-    default_factory: Callable[[], Any] | None = None
+    default_factory: (
+        Callable[[], Any]
+        | Callable[[dict[str, Any]], Any]
+        | None
+    ) = None
 )
 
 ```
@@ -21422,12 +21437,17 @@ You generally shouldn't be creating `ModelPrivateAttr` instances directly, inste
 
 Attributes:
 
-| Name | Type | Description | | --- | --- | --- | | `default` | | The default value of the attribute if not provided. | | `default_factory` | | A callable function that generates the default value of the attribute if not provided. |
+| Name | Type | Description | | --- | --- | --- | | `default` | | The default value of the attribute if not provided. | | `default_factory` | | A callable to generate the default value. The callable can either take 0 arguments (in which case it is called as is) or a single argument containing the validated data (the model's __dict__) and the already initialized private attributes. |
 
 Source code in `pydantic/fields.py`
 
 ```python
-def __init__(self, default: Any = PydanticUndefined, *, default_factory: Callable[[], Any] | None = None) -> None:
+def __init__(
+    self,
+    default: Any = PydanticUndefined,
+    *,
+    default_factory: Callable[[], Any] | Callable[[dict[str, Any]], Any] | None = None,
+) -> None:
     if default is Ellipsis:
         self.default = PydanticUndefined
     else:
@@ -21482,37 +21502,79 @@ def __set_name__(self, cls: type[Any], name: str) -> None:
 
 ```
 
-### get_default
+### default_factory_takes_validated_data
 
 ```python
-get_default() -> Any
+default_factory_takes_validated_data: bool | None
 
 ```
 
-Retrieve the default value of the object.
+Whether the provided default factory callable has a validated data parameter.
 
-If `self.default_factory` is `None`, the method will return a deep copy of the `self.default` object.
+Returns `None` if no default factory is set.
 
-If `self.default_factory` is not `None`, it will call `self.default_factory` and return the value returned.
+### get_default
+
+```python
+get_default(
+    *,
+    call_default_factory: Literal[True],
+    validated_data: dict[str, Any] | None = None
+) -> Any
+
+```
+
+```python
+get_default(
+    *, call_default_factory: Literal[False] = ...
+) -> Any
+
+```
+
+```python
+get_default(
+    *,
+    call_default_factory: bool = False,
+    validated_data: dict[str, Any] | None = None
+) -> Any
+
+```
+
+Get the default value.
+
+We expose an option for whether to call the default_factory (if present), as calling it may result in side effects that we want to avoid. However, there are times when it really should be called (namely, when instantiating a model via `model_construct`).
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `call_default_factory` | `bool` | Whether to call the default factory or not. | `False` | | `validated_data` | `dict[str, Any] | None` | The already validated data to be passed to the default factory. | `None` |
 
 Returns:
 
-| Type | Description | | --- | --- | | `Any` | The default value of the object. |
+| Type | Description | | --- | --- | | `Any` | The default value, calling the default factory if requested or None if not set. |
 
 Source code in `pydantic/fields.py`
 
 ```python
-def get_default(self) -> Any:
-    """Retrieve the default value of the object.
+def get_default(self, *, call_default_factory: bool = False, validated_data: dict[str, Any] | None = None) -> Any:
+    """Get the default value.
 
-    If `self.default_factory` is `None`, the method will return a deep copy of the `self.default` object.
+    We expose an option for whether to call the default_factory (if present), as calling it may
+    result in side effects that we want to avoid. However, there are times when it really should
+    be called (namely, when instantiating a model via `model_construct`).
 
-    If `self.default_factory` is not `None`, it will call `self.default_factory` and return the value returned.
+    Args:
+        call_default_factory: Whether to call the default factory or not.
+        validated_data: The already validated data to be passed to the default factory.
 
     Returns:
-        The default value of the object.
+        The default value, calling the default factory if requested or `None` if not set.
     """
-    return _utils.smart_deepcopy(self.default) if self.default_factory is None else self.default_factory()
+    return _fields.resolve_default_value(
+        default=self.default,
+        default_factory=self.default_factory,
+        validated_data=validated_data,
+        call_default_factory=call_default_factory,
+    )
 
 ```
 
@@ -27282,9 +27344,57 @@ Usage Documentation
 
 [`WithJsonSchema` Annotation](../../concepts/json_schema/#withjsonschema-annotation)
 
-Add this as an annotation on a field to override the (base) JSON schema that would be generated for that field. This provides a way to set a JSON schema for types that would otherwise raise errors when producing a JSON schema, such as Callable, or types that have an is-instance core schema, without needing to go so far as creating a custom subclass of pydantic.json_schema.GenerateJsonSchema. Note that any *modifications* to the schema that would normally be made (such as setting the title for model fields) will still be performed.
+An annotation used to override the JSON Schema for a type.
 
-If `mode` is set this will only apply to that schema generation mode, allowing you to set different json schemas for validation and serialization.
+This is useful when you want to set a JSON Schema for a type that don't produce any JSON Schemas by default (e.g. Callable).
+
+If `mode` is set this will only apply to that schema generation mode, allowing you to set different JSON Schemas for validation and serialization.
+
+Note
+
+If the `WithJsonSchema` annotation is coupled with the Field() function, the behavior overriding will vary depending on the location:
+
+- If the Annotated metadata is specified at the "top-level" field, `Field()` metadata arguments (excluding [constraints](../../concepts/fields/#field-constraints)) such as `title` and `description` will be applied on top of the `WithJsonSchema`, no matter the order:
+
+  ```python
+  from typing import Annotated
+
+  from pydantic import BaseModel, Field, WithJsonSchema
+
+  class Model(BaseModel):
+      field: Annotated[
+          int,
+          Field(title='My Field'),
+          WithJsonSchema({'type': 'integer', 'extra': 'data'}),
+      ]
+
+  Model.model_json_schema()['properties']['field']
+  #> {'type': 'integer', 'extra': 'data', 'title': 'My Field'}
+
+  ```
+
+- If the Annotated metadata is specified on a specific inner type, `WithJsonSchema` will unconditionally override the JSON Schema:
+
+  ```python
+  from typing import Annotated
+
+  from pydantic import BaseModel, Field, WithJsonSchema
+
+  class Model(BaseModel):
+      field: list[
+          Annotated[
+              int,
+              Field(title='My Field'),
+              WithJsonSchema({'type': 'integer', 'extra': 'data'}),
+          ]
+      ]
+
+  Model.model_json_schema()['properties']['field']
+  #> {'items': {'extra': 'data', 'type': 'integer'}, 'title': 'Field', 'type': 'array'}
+
+  ```
+
+See also the documentation about [the annotated pattern](../../concepts/fields/#the-annotated-pattern).
 
 ## Examples
 
