@@ -4,7 +4,7 @@ Defining fields on models.
 
 ```python
 Field(
-    default: ellipsis,
+    default: EllipsisType,
     *,
     alias: str | None = _Unset,
     alias_priority: int | None = _Unset,
