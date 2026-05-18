@@ -6406,13 +6406,13 @@ print(Settings().model_dump())
 
    Check the [`Field` documentation](../fields/#field-aliases) for more information.
 
-1. The AliasChoices class allows to have multiple environment variable names for a single field. The first environment variable that is found will be used.
+1. The AliasChoices class allows you to have multiple environment variable names for a single field. The first environment variable that is found will be used.
 
    Check the [documentation on alias choices](../alias/#aliaspath-and-aliaschoices) for more information.
 
-1. The ImportString class allows to import an object from a string. In this case, the environment variable `special_function` will be read and the function math.cos will be imported.
+1. The ImportString class allows you to import an object from a string. In this case, the environment variable `special_function` will be read and the function math.cos will be imported.
 
-1. The `env_prefix` config setting allows to set a prefix for all environment variables.
+1. The `env_prefix` config setting allows you to set a prefix for all environment variables.
 
    Check the [Environment variable names documentation](#environment-variable-names) for more information.
 
@@ -8547,7 +8547,7 @@ Same as `case_sensitive`, but works for secrets only. If not specified, defaults
 
 #### secrets_nested_delimiter
 
-Same as `env_nested_delimiter`, but works for secrets only. If not specified, defaults to `env_nested_delimiter`. This option is used to implement *nested secrets directory* layout and allows to do even nasty things like `/run/secrets/model/delim/nested1/delim/nested2`.
+Same as `env_nested_delimiter`, but works for secrets only. If not specified, defaults to `env_nested_delimiter`. This option is used to implement *nested secrets directory* layout and allows you to do even nasty things like `/run/secrets/model/delim/nested1/delim/nested2`.
 
 #### secrets_nested_subdir
 
@@ -9987,7 +9987,7 @@ Polymorphic serialization is the behavior of serializing a model (or [Pydantic d
 
 This behavior can be configured in the following ways:
 
-- Configuration level: use the polymorphic_serialization setting in the model/dataclass [configuration](../config/).
+- Configuration level: use the polymorphic_serialization setting in the model/dataclass [configuration](../config/). The configuration should be set on the class that should be polymorphic, not on the class that references polymorphic classes.
 - Runtime level: use the `polymorphic_serialization` argument when calling the [serialization methods](#serializing-data). This will apply to all (nested) types, overriding any configuration.
 
 Duck-typed serialization
@@ -10006,7 +10006,7 @@ We can then see the effect of serializing each of these types, and the interacti
 from pydantic import BaseModel
 
 
-class User(BaseModel):
+class User(BaseModel):  # (1)!
     name: str
 
 
@@ -10023,13 +10023,14 @@ outer_model = OuterModel(
 )
 
 
-print(outer_model.model_dump())  # (1)!
+print(outer_model.model_dump())  # (2)!
 #> {'user': {'name': 'pydantic'}}
-print(outer_model.model_dump(polymorphic_serialization=True))  # (2)!
+print(outer_model.model_dump(polymorphic_serialization=True))  # (3)!
 #> {'user': {'name': 'pydantic', 'password': 'password'}}
 
 ```
 
+1. The `polymorphic_serialization` configuration would be set on this model to get the same behavior as the runtime setting below.
 1. With polymorphic serialization disabled, `user` serializes as the base type.
 1. With polymorphic serialization enabled, `user` serializes as the actual runtime subclass.
 
@@ -10352,7 +10353,7 @@ Strict mode can be enabled in various ways:
 
 ## As a validation parameter
 
-Strict mode can be enaled on a per-validation-call basis, when using the [validation methods](../models/#validating-data) on [Pydantic models](../models/) and [type adapters](../type_adapter/).
+Strict mode can be enabled on a per-validation-call basis, when using the [validation methods](../models/#validating-data) on [Pydantic models](../models/) and [type adapters](../type_adapter/).
 
 ```python
 from datetime import date
@@ -14047,14 +14048,40 @@ class BaseModel(metaclass=_model_construction.ModelMetaclass):
             fields (e.g. the value of [cached properties][functools.cached_property]).
 
         Args:
-            update: Values to change/add in the new model. Note: the data is not validated
-                before creating the new model. You should trust this data.
-            deep: Set to `True` to make a deep copy of the model.
+            update: A mapping of values to update the copied model. Updates are *not*
+                applied recursively, and no validation is performed on updated values.
+                Only the known fields are updated (if unknown keys are being passed and
+                the model has [`extra`][pydantic.ConfigDict.extra] set to `'allow'`, they
+                are added as extra data).
+            deep: Whether a [deep copy][copy.deepcopy] of the model should be performed.
 
         Returns:
             New model instance.
         """
-        copied = self.__deepcopy__() if deep else self.__copy__()
+        if deep and update:
+            # Only deep copy the fields that won't be updated:
+            copied = self.__copy__()
+
+            # As we make separate `deepcopy()` calls, use a shared memo:
+            memo: dict[int, Any] = {}
+
+            # Selectively deepcopy fields that are not being updated:
+            for k, v in copied.__dict__.items():
+                if k not in update:
+                    copied.__dict__[k] = deepcopy(v, memo)
+            if copied.__pydantic_extra__ is not None:
+                for k, v in copied.__pydantic_extra__.items():
+                    if k not in update:
+                        copied.__pydantic_extra__[k] = deepcopy(v, memo)
+            if copied.__pydantic_private__ is not None:
+                # Same logic as `BaseModel.__deepcopy__()`:
+                copied.__pydantic_private__ = deepcopy(
+                    {k: v for k, v in copied.__pydantic_private__.items() if v is not PydanticUndefined},
+                    memo,
+                )
+        else:
+            copied = self.__deepcopy__() if deep else self.__copy__()
+
         if update:
             if self.model_config.get('extra') == 'allow':
                 for k, v in update.items():
@@ -14066,7 +14093,9 @@ class BaseModel(metaclass=_model_construction.ModelMetaclass):
                         copied.__pydantic_extra__[k] = v
             else:
                 copied.__dict__.update(update)
+
             copied.__pydantic_fields_set__.update(update.keys())
+
         return copied
 
     def model_dump(
@@ -15610,7 +15639,7 @@ The underlying instance's __dict__ attribute is copied. This might have unexpect
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `update` | `Mapping[str, Any] | None` | Values to change/add in the new model. Note: the data is not validated before creating the new model. You should trust this data. | `None` | | `deep` | `bool` | Set to True to make a deep copy of the model. | `False` |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `update` | `Mapping[str, Any] | None` | A mapping of values to update the copied model. Updates are not applied recursively, and no validation is performed on updated values. Only the known fields are updated (if unknown keys are being passed and the model has extra set to 'allow', they are added as extra data). | `None` | | `deep` | `bool` | Whether a deep copy of the model should be performed. | `False` |
 
 Returns:
 
@@ -15631,14 +15660,40 @@ def model_copy(self, *, update: Mapping[str, Any] | None = None, deep: bool = Fa
         fields (e.g. the value of [cached properties][functools.cached_property]).
 
     Args:
-        update: Values to change/add in the new model. Note: the data is not validated
-            before creating the new model. You should trust this data.
-        deep: Set to `True` to make a deep copy of the model.
+        update: A mapping of values to update the copied model. Updates are *not*
+            applied recursively, and no validation is performed on updated values.
+            Only the known fields are updated (if unknown keys are being passed and
+            the model has [`extra`][pydantic.ConfigDict.extra] set to `'allow'`, they
+            are added as extra data).
+        deep: Whether a [deep copy][copy.deepcopy] of the model should be performed.
 
     Returns:
         New model instance.
     """
-    copied = self.__deepcopy__() if deep else self.__copy__()
+    if deep and update:
+        # Only deep copy the fields that won't be updated:
+        copied = self.__copy__()
+
+        # As we make separate `deepcopy()` calls, use a shared memo:
+        memo: dict[int, Any] = {}
+
+        # Selectively deepcopy fields that are not being updated:
+        for k, v in copied.__dict__.items():
+            if k not in update:
+                copied.__dict__[k] = deepcopy(v, memo)
+        if copied.__pydantic_extra__ is not None:
+            for k, v in copied.__pydantic_extra__.items():
+                if k not in update:
+                    copied.__pydantic_extra__[k] = deepcopy(v, memo)
+        if copied.__pydantic_private__ is not None:
+            # Same logic as `BaseModel.__deepcopy__()`:
+            copied.__pydantic_private__ = deepcopy(
+                {k: v for k, v in copied.__pydantic_private__.items() if v is not PydanticUndefined},
+                memo,
+            )
+    else:
+        copied = self.__deepcopy__() if deep else self.__copy__()
+
     if update:
         if self.model_config.get('extra') == 'allow':
             for k, v in update.items():
@@ -15650,7 +15705,9 @@ def model_copy(self, *, update: Mapping[str, Any] | None = None, deep: bool = Fa
                     copied.__pydantic_extra__[k] = v
         else:
             copied.__dict__.update(update)
+
         copied.__pydantic_fields_set__.update(update.keys())
+
     return copied
 
 ```
@@ -19242,6 +19299,281 @@ def not_in(self: _Pipeline[_InT, _OutT], values: Container[_OutT]) -> _Pipeline[
 
 ```
 
+### datetime_tz_naive
+
+```python
+datetime_tz_naive() -> _Pipeline[_InT, datetime]
+
+```
+
+Constrain a datetime value to be timezone-naive (i.e. have no tzinfo).
+
+Source code in `pydantic/experimental/pipeline.py`
+
+```python
+def datetime_tz_naive(self: _Pipeline[_InT, datetime.datetime]) -> _Pipeline[_InT, datetime.datetime]:
+    """Constrain a datetime value to be timezone-naive (i.e. have no tzinfo)."""
+    return self.constrain(annotated_types.Timezone(None))
+
+```
+
+### datetime_tz_aware
+
+```python
+datetime_tz_aware() -> _Pipeline[_InT, datetime]
+
+```
+
+Constrain a datetime value to be timezone-aware (i.e. have a non-None tzinfo).
+
+Source code in `pydantic/experimental/pipeline.py`
+
+```python
+def datetime_tz_aware(self: _Pipeline[_InT, datetime.datetime]) -> _Pipeline[_InT, datetime.datetime]:
+    """Constrain a datetime value to be timezone-aware (i.e. have a non-None tzinfo)."""
+    return self.constrain(annotated_types.Timezone(...))
+
+```
+
+### datetime_tz
+
+```python
+datetime_tz(tz: tzinfo) -> _Pipeline[_InT, datetime]
+
+```
+
+Constrain a datetime value to have a specific timezone.
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `tz` | `tzinfo` | The required timezone. | *required* |
+
+Source code in `pydantic/experimental/pipeline.py`
+
+```python
+def datetime_tz(
+    self: _Pipeline[_InT, datetime.datetime], tz: datetime.tzinfo
+) -> _Pipeline[_InT, datetime.datetime]:
+    """Constrain a datetime value to have a specific timezone.
+
+    Args:
+        tz: The required timezone.
+    """
+    return self.constrain(annotated_types.Timezone(tz))  # type: ignore
+
+```
+
+### datetime_with_tz
+
+```python
+datetime_with_tz(
+    tz: tzinfo | None,
+) -> _Pipeline[_InT, datetime]
+
+```
+
+Transform a datetime value by replacing its timezone with the given value.
+
+Unlike `datetime_tz()`, this does not validate the existing timezone, it unconditionally sets tzinfo to `tz`.
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `tz` | `tzinfo | None` | The timezone to attach to the datetime, or None to make it naive. | *required* |
+
+Source code in `pydantic/experimental/pipeline.py`
+
+```python
+def datetime_with_tz(
+    self: _Pipeline[_InT, datetime.datetime], tz: datetime.tzinfo | None
+) -> _Pipeline[_InT, datetime.datetime]:
+    """Transform a datetime value by replacing its timezone with the given value.
+
+    Unlike `datetime_tz()`, this does not validate the existing timezone, it
+    unconditionally sets [`tzinfo`][datetime.datetime.tzinfo] to `tz`.
+
+    Args:
+        tz: The timezone to attach to the datetime, or `None` to make it naive.
+    """
+    return self.transform(partial(datetime.datetime.replace, tzinfo=tz))
+
+```
+
+### str_lower
+
+```python
+str_lower() -> _Pipeline[_InT, str]
+
+```
+
+Transform a string value to lowercase.
+
+Source code in `pydantic/experimental/pipeline.py`
+
+```python
+def str_lower(self: _Pipeline[_InT, str]) -> _Pipeline[_InT, str]:
+    """Transform a string value to [lowercase][str.lower]."""
+    return self.transform(str.lower)
+
+```
+
+### str_upper
+
+```python
+str_upper() -> _Pipeline[_InT, str]
+
+```
+
+Transform a string value to uppercase.
+
+Source code in `pydantic/experimental/pipeline.py`
+
+```python
+def str_upper(self: _Pipeline[_InT, str]) -> _Pipeline[_InT, str]:
+    """Transform a string value to [uppercase][str.upper]."""
+    return self.transform(str.upper)
+
+```
+
+### str_title
+
+```python
+str_title() -> _Pipeline[_InT, str]
+
+```
+
+Transform a string value to title case.
+
+Source code in `pydantic/experimental/pipeline.py`
+
+```python
+def str_title(self: _Pipeline[_InT, str]) -> _Pipeline[_InT, str]:
+    """Transform a string value to [title case][str.title]."""
+    return self.transform(str.title)
+
+```
+
+### str_strip
+
+```python
+str_strip() -> _Pipeline[_InT, str]
+
+```
+
+Strip leading and trailing whitespace from a string value.
+
+Source code in `pydantic/experimental/pipeline.py`
+
+```python
+def str_strip(self: _Pipeline[_InT, str]) -> _Pipeline[_InT, str]:
+    """Strip leading and trailing whitespace from a string value."""
+    return self.transform(str.strip)
+
+```
+
+### str_pattern
+
+```python
+str_pattern(pattern: str) -> _Pipeline[_InT, str]
+
+```
+
+Constrain a string value to match a regular expression pattern.
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `pattern` | `str` | The regular expression pattern the string must match. | *required* |
+
+Source code in `pydantic/experimental/pipeline.py`
+
+```python
+def str_pattern(self: _Pipeline[_InT, str], pattern: str) -> _Pipeline[_InT, str]:
+    """Constrain a string value to match a regular expression pattern.
+
+    Args:
+        pattern: The regular expression pattern the string must match.
+    """
+    return self.constrain(re.compile(pattern))
+
+```
+
+### str_contains
+
+```python
+str_contains(substring: str) -> _Pipeline[_InT, str]
+
+```
+
+Constrain a string value to contain a given substring.
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `substring` | `str` | The substring that must be present in the string. | *required* |
+
+Source code in `pydantic/experimental/pipeline.py`
+
+```python
+def str_contains(self: _Pipeline[_InT, str], substring: str) -> _Pipeline[_InT, str]:
+    """Constrain a string value to contain a given substring.
+
+    Args:
+        substring: The substring that must be present in the string.
+    """
+    return self.predicate(lambda v: substring in v)
+
+```
+
+### str_starts_with
+
+```python
+str_starts_with(prefix: str) -> _Pipeline[_InT, str]
+
+```
+
+Constrain a string value to start with a given prefix.
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `prefix` | `str` | The prefix the string must start with. | *required* |
+
+Source code in `pydantic/experimental/pipeline.py`
+
+```python
+def str_starts_with(self: _Pipeline[_InT, str], prefix: str) -> _Pipeline[_InT, str]:
+    """Constrain a string value to start with a given prefix.
+
+    Args:
+        prefix: The prefix the string must start with.
+    """
+    return self.predicate(lambda v: v.startswith(prefix))
+
+```
+
+### str_ends_with
+
+```python
+str_ends_with(suffix: str) -> _Pipeline[_InT, str]
+
+```
+
+Constrain a string value to end with a given suffix.
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `suffix` | `str` | The suffix the string must end with. | *required* |
+
+Source code in `pydantic/experimental/pipeline.py`
+
+```python
+def str_ends_with(self: _Pipeline[_InT, str], suffix: str) -> _Pipeline[_InT, str]:
+    """Constrain a string value to end with a given suffix.
+
+    Args:
+        suffix: The suffix the string must end with.
+    """
+    return self.predicate(lambda v: v.endswith(suffix))
+
+```
+
 ### otherwise
 
 ```python
@@ -20208,7 +20540,7 @@ PrivateAttr(
 PrivateAttr(
     *,
     default_factory: (
-        Callable[[], _T] | Callable[[dict[str, Any]], _T]
+        Callable[[], _T" optional hover>_T] | Callable[[dict[str, Any]], _T" optional hover>_T]
     ),
     init: Literal[False] = False
 ) -> _T
@@ -27638,7 +27970,7 @@ SchemaSerializer(
 
 Parameters:
 
-| Name | Type | Description | Default | | --- | --- | --- | --- | | `schema` | `CoreSchema` | The CoreSchema to use for serialization. | *required* | | `config` | `CoreConfig | None` | Optionally a CoreConfig to to configure serialization. | `None` | | `_use_prebuilt` | `bool` | Whether to use pre-built validators (False during rebuilds to avoid stale references). | `True` |
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `schema` | `CoreSchema` | The CoreSchema to use for serialization. | *required* | | `config` | `CoreConfig | None` | Optionally a CoreConfig to configure serialization. | `None` | | `_use_prebuilt` | `bool` | Whether to use pre-built validators (False during rebuilds to avoid stale references). | `True` |
 
 ### to_python
 
