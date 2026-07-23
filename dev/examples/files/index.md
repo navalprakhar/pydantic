@@ -77,10 +77,10 @@ except ValidationError as err:
     3 validation errors for Person
     name
     Field required [type=missing, input_value={'age': -30, 'email': 'not-an-email-address'}, input_type=dict]
-        For further information visit https://errors.pydantic.dev/2.10/v/missing
+        For further information visit https://errors.pydantic.dev/2/v/missing
     age
     Input should be greater than 0 [type=greater_than, input_value=-30, input_type=int]
-        For further information visit https://errors.pydantic.dev/2.10/v/greater_than
+        For further information visit https://errors.pydantic.dev/2/v/greater_than
     email
     value is not a valid email address: An email address must have an @-sign. [type=value_error, input_value='not-an-email-address', input_type=str]
     """
@@ -129,6 +129,10 @@ print(people)
 ```
 
 1. We use TypeAdapter to validate a list of `Person` objects. TypeAdapter is a Pydantic construct used to validate data against a single type.
+
+Logfire integration
+
+With two records, spotting a bad one is easy. In a pipeline processing files with thousands of records, the error's `loc` gives you the index of the failing one, and if the pipeline runs unattended, [Logfire](../../errors/troubleshooting/) records each failed validation with its input, so you can find the offending record after the run.
 
 ## JSON lines files
 
@@ -248,7 +252,7 @@ email: john@example.com
 
 ```
 
-Here's how we validate that data:
+Here's how we validate that data using [PyYAML](https://pypi.org/project/PyYAML/):
 
 ```python
 import yaml

@@ -534,6 +534,8 @@ To raise a validation error, three types of exceptions can be used:
 
   ```
 
+When a validator rejects data in production, [Logfire](../../errors/troubleshooting/) records the input alongside each validation, so you can see the value that broke the rule.
+
 ## Validation info
 
 Both the field and model validators callables (in all modes) can optionally take an extra ValidationInfo argument, providing useful extra information, such as:
@@ -740,7 +742,7 @@ Pydantic provides a few special utilities that can be used to customize validati
 
   1. Note that the validation of the second item is skipped. If it has the wrong type it will emit a warning during serialization.
 
-- ValidateAs can be used to validate an custom type from a type natively supported by Pydantic. This is particularly useful when using custom types with multiple fields.
+- ValidateAs can be used to validate a custom type from a type natively supported by Pydantic. This is particularly useful when using custom types with multiple fields.
 
   ```python
   from typing import Annotated

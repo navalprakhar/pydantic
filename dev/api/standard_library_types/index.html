@@ -121,7 +121,7 @@ What's new &mdash; we've launched
 <a href="https://pydantic.dev/articles/logfire-announcement">Pydantic Logfire</a>
 <img alt="🔥" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.0.3/assets/svg/1f525.svg" title=":fire:">
 to help you monitor and understand your
-<a href="https://logfire.pydantic.dev/docs/integrations/pydantic/" id="logfire-app-type" target="_blank">Pydantic validations.</a>
+<a href="https://pydantic.dev/docs/logfire/integrations/pydantic/" id="logfire-app-type" target="_blank">Pydantic validations.</a>
 
           </div>
           
@@ -3612,6 +3612,34 @@ to help you monitor and understand your
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../errors/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting with Logfire
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -5005,7 +5033,7 @@ type as a convenience to <a href="../../concepts/strict_mode/#using-the-strict-m
 <ul>
 <li>Floats are validated as-is.</li>
 <li>String and bytes are attempted to be converted to floats and validated as-is.
-  (see the <a href="https://doc.rust-lang.org/src/core/num/dec2flt/mod.rs.html">Rust implementation</a> for details).</li>
+  (see the <a href="https://doc.rust-lang.org/src/core/num/float_parse.rs.html">Rust implementation</a> for details).</li>
 <li>If the input has a <a class="autorefs autorefs-external" href="https://docs.python.org/3/reference/datamodel.html#object.__float__"><code>__float__()</code></a> method, it will be called to convert the input into
   a float. If <code>__float__()</code> is not defined, it falls back to <a class="autorefs autorefs-external" href="https://docs.python.org/3/reference/datamodel.html#object.__index__"><code>__index__()</code></a>. This includes
   (but not limited to) the <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/decimal.html#decimal.Decimal"><code>Decimal</code></a> and <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/fractions.html#fractions.Fraction"><code>Fraction</code></a> types.</li>
@@ -5938,7 +5966,7 @@ will apply. The <a class="autorefs autorefs-external" href="https://docs.python.
 constructor, and then converted back to the original input type.</p>
 <div class="admonition warning">
 <p class="admonition-title">Strings aren't treated as sequences</p>
-<p>While strings are technically valid sequence instances, this is frequently not intended as is a common source of bugs.</p>
+<p>While strings are technically valid sequence instances, this is frequently not intended, and is a common source of bugs.</p>
 <p>As a result, Pydantic will <em>not</em> accept strings and bytes for the <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence"><code>Sequence</code></a> type (see example below).</p>
 </div>
 <h4>Constraints</h4>
@@ -6399,6 +6427,7 @@ serialized as is.</p>
 <li><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path"><code>pathlib.Path</code></a>.</li>
 <li><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/pathlib.html#pathlib.PurePath"><code>pathlib.PurePath</code></a>.</li>
 <li><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/pathlib.html#pathlib.PosixPath"><code>pathlib.PosixPath</code></a>.</li>
+<li><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/pathlib.html#pathlib.WindowsPath"><code>pathlib.WindowsPath</code></a>.</li>
 <li><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/pathlib.html#pathlib.PurePosixPath"><code>pathlib.PurePosixPath</code></a>.</li>
 <li><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/pathlib.html#pathlib.PureWindowsPath"><code>pathlib.PureWindowsPath</code></a>.</li>
 <li><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/os.html#os.PathLike"><code>os.PathLike</code></a> (must be parameterized with <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str"><code>str</code></a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#bytes"><code>bytes</code></a> or <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/typing.html#typing.Any"><code>Any</code></a>).</li>
@@ -6489,7 +6518,7 @@ serialized as is.</p>
                 
   <script src="/flarelytics/client.js"></script>
       <script>
-    window.mkdocs_run_deps = ["https://docs.pydantic.dev/dev/pydantic-2.14.0a0+dev-py3-none-any.whl", "email-validator>=2.0.0", "pydantic-core==2.46.0", "pydantic-extra-types==2.10.6"]
+    window.mkdocs_run_deps = ["pydantic==2.14.0a1", "email-validator>=2.0.0", "pydantic-core==2.47.0", "pydantic-extra-types==2.10.6"]
     </script>
 
               </article>

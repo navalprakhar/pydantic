@@ -16,7 +16,7 @@
         <link rel="prev" href="../validation_errors/">
       
       
-        <link rel="next" href="../../integrations/logfire/">
+        <link rel="next" href="../troubleshooting/">
       
       
         
@@ -121,7 +121,7 @@ What's new &mdash; we've launched
 <a href="https://pydantic.dev/articles/logfire-announcement">Pydantic Logfire</a>
 <img alt="🔥" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.0.3/assets/svg/1f525.svg" title=":fire:">
 to help you monitor and understand your
-<a href="https://logfire.pydantic.dev/docs/integrations/pydantic/" id="logfire-app-type" target="_blank">Pydantic validations.</a>
+<a href="https://pydantic.dev/docs/logfire/integrations/pydantic/" id="logfire-app-type" target="_blank">Pydantic validations.</a>
 
           </div>
           
@@ -3763,6 +3763,34 @@ to help you monitor and understand your
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting with Logfire
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -5777,7 +5805,7 @@ but it is a dictionary instead of an object like it was in Pydantic V1.</p>
 
 <span class="c1"># an instance method with `mode=&#39;wrap&#39;`</span>
 <span class="nd">@model_serializer</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;wrap&#39;</span><span class="p">)</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">mod_ser</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">handler</span><span class="p">:</span> <span class="n">SerializerFunctionWrapHandler</span><span class="p">,</span> <span class="n">info</span><span class="p">:</span> <span class="n">SerializationInfo</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">mod_ser</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">handler</span><span class="p">:</span> <span class="n">SerializerFunctionWrapHandler</span><span class="p">,</span> <span class="n">info</span><span class="p">:</span> <span class="n">SerializationInfo</span><span class="p">):</span> <span class="o">...</span>
 
 <span class="c1"># For all of these, you can also choose to omit the `info` argument, for example:</span>
 <span class="nd">@model_serializer</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;plain&#39;</span><span class="p">)</span>
@@ -6349,7 +6377,7 @@ overlapping with other parameters (unless <a class="autorefs autorefs-external" 
                 
   <script src="/flarelytics/client.js"></script>
       <script>
-    window.mkdocs_run_deps = ["https://docs.pydantic.dev/dev/pydantic-2.14.0a0+dev-py3-none-any.whl", "email-validator>=2.0.0", "pydantic-core==2.46.0", "pydantic-extra-types==2.10.6"]
+    window.mkdocs_run_deps = ["pydantic==2.14.0a1", "email-validator>=2.0.0", "pydantic-core==2.47.0", "pydantic-extra-types==2.10.6"]
     </script>
 
               </article>

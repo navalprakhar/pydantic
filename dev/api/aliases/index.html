@@ -121,7 +121,7 @@ What's new &mdash; we've launched
 <a href="https://pydantic.dev/articles/logfire-announcement">Pydantic Logfire</a>
 <img alt="🔥" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.0.3/assets/svg/1f525.svg" title=":fire:">
 to help you monitor and understand your
-<a href="https://logfire.pydantic.dev/docs/integrations/pydantic/" id="logfire-app-type" target="_blank">Pydantic validations.</a>
+<a href="https://pydantic.dev/docs/logfire/integrations/pydantic/" id="logfire-app-type" target="_blank">Pydantic validations.</a>
 
           </div>
           
@@ -3304,6 +3304,34 @@ to help you monitor and understand your
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../errors/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting with Logfire
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -4654,7 +4682,7 @@ to help you monitor and understand your
             </td>
             <td>
               <div class="doc-md-description">
-                <p>A tuple of three aliases - validation, alias, and serialization.</p>
+                <p>A tuple of three aliases - alias, validation, and serialization.</p>
               </div>
             </td>
           </tr>
@@ -4663,9 +4691,7 @@ to help you monitor and understand your
 
             <details class="quote">
               <summary>Source code in <code>pydantic/aliases.py</code></summary>
-              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">124</span>
-<span class="normal">125</span>
-<span class="normal">126</span>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">126</span>
 <span class="normal">127</span>
 <span class="normal">128</span>
 <span class="normal">129</span>
@@ -4673,11 +4699,13 @@ to help you monitor and understand your
 <span class="normal">131</span>
 <span class="normal">132</span>
 <span class="normal">133</span>
-<span class="normal">134</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">generate_aliases</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">AliasPath</span> <span class="o">|</span> <span class="n">AliasChoices</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">generate_aliases</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">AliasPath</span> <span class="o">|</span> <span class="n">AliasChoices</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate `alias`, `validation_alias`, and `serialization_alias` for a field.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        A tuple of three aliases - validation, alias, and serialization.</span>
+<span class="sd">        A tuple of three aliases - alias, validation, and serialization.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">alias</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_alias</span><span class="p">(</span><span class="s1">&#39;alias&#39;</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,),</span> <span class="n">field_name</span><span class="p">)</span>
     <span class="n">validation_alias</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_alias</span><span class="p">(</span><span class="s1">&#39;validation_alias&#39;</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">AliasChoices</span><span class="p">,</span> <span class="n">AliasPath</span><span class="p">),</span> <span class="n">field_name</span><span class="p">)</span>
@@ -4773,7 +4801,7 @@ to help you monitor and understand your
                 
   <script src="/flarelytics/client.js"></script>
       <script>
-    window.mkdocs_run_deps = ["https://docs.pydantic.dev/dev/pydantic-2.14.0a0+dev-py3-none-any.whl", "email-validator>=2.0.0", "pydantic-core==2.46.0", "pydantic-extra-types==2.10.6"]
+    window.mkdocs_run_deps = ["pydantic==2.14.0a1", "email-validator>=2.0.0", "pydantic-core==2.47.0", "pydantic-extra-types==2.10.6"]
     </script>
 
               </article>

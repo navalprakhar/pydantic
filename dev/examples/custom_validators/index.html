@@ -121,7 +121,7 @@ What's new &mdash; we've launched
 <a href="https://pydantic.dev/articles/logfire-announcement">Pydantic Logfire</a>
 <img alt="🔥" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.0.3/assets/svg/1f525.svg" title=":fire:">
 to help you monitor and understand your
-<a href="https://logfire.pydantic.dev/docs/integrations/pydantic/" id="logfire-app-type" target="_blank">Pydantic validations.</a>
+<a href="https://pydantic.dev/docs/logfire/integrations/pydantic/" id="logfire-app-type" target="_blank">Pydantic validations.</a>
 
           </div>
           
@@ -3207,6 +3207,34 @@ to help you monitor and understand your
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../errors/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting with Logfire
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3974,7 +4002,7 @@ that ensures a <a class="autorefs autorefs-external" href="https://docs.python.o
 <span class="sd">    &#39;loc&#39;: (),</span>
 <span class="sd">    &#39;msg&#39;: &#39;Assertion failed, Invalid tzinfo: Europe/London, expected: America/Los_Angeles&#39;,</span>
 <span class="sd">    &#39;type&#39;: &#39;assertion_error&#39;,</span>
-<span class="sd">    &#39;url&#39;: &#39;https://errors.pydantic.dev/2.8/v/assertion_error&#39;}]</span>
+<span class="sd">    &#39;url&#39;: &#39;https://errors.pydantic.dev/2/v/assertion_error&#39;}]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 </code></pre></div>
 <ol>
@@ -4052,7 +4080,7 @@ that ensures a <a class="autorefs autorefs-external" href="https://docs.python.o
 <span class="sd">    &#39;loc&#39;: (),</span>
 <span class="sd">    &#39;msg&#39;: &#39;Assertion failed, Value out of bounds&#39;,</span>
 <span class="sd">    &#39;type&#39;: &#39;assertion_error&#39;,</span>
-<span class="sd">    &#39;url&#39;: &#39;https://errors.pydantic.dev/2.8/v/assertion_error&#39;}]</span>
+<span class="sd">    &#39;url&#39;: &#39;https://errors.pydantic.dev/2/v/assertion_error&#39;}]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 </code></pre></div>
 <h2 id="validating-nested-model-fields">Validating Nested Model Fields<a class="headerlink" href="#validating-nested-model-fields" title="Permanent link">&para;</a></h2>
@@ -4151,7 +4179,8 @@ that ensures a <a class="autorefs autorefs-external" href="https://docs.python.o
 </div>
 </div>
 </div>
-<p>Alternatively, a custom validator can be used in the nested model class (<code>User</code>), with the forbidden passwords data from the parent model being passed in via validation context.</p>
+<p>Alternatively, a custom validator can be used in the nested model class (<code>User</code>), with the forbidden passwords data from the parent model being passed in
+via <a href="../../concepts/validators/#validation-context">validation context</a>.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>The ability to mutate the context within a validator adds a lot of power to nested validation, but can also lead to confusing or hard-to-debug code. Use this approach at your own risk!</p>
@@ -4207,8 +4236,13 @@ that ensures a <a class="autorefs autorefs-external" href="https://docs.python.o
 <span class="sd">      Value error, Password 123 is forbidden. [type=value_error, input_value=&#39;123&#39;, input_type=str]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 </code></pre></div>
-<p>Note that if the context property is not included in <code>model_validate</code>, then <code>info.context</code> will be <code>None</code> and the forbidden passwords list will not get added to the context in the above implementation. As such, <code>validate_user_passwords</code> would not carry out the desired password validation.</p>
+<p>Note that if the context property is not included in <a class="autorefs autorefs-internal" href="../../api/base_model/#pydantic.BaseModel.model_validate"><code>model_validate()</code></a>, then <a class="autorefs autorefs-internal" href="../../api/pydantic_core_schema/#pydantic_core.core_schema.ValidationInfo.context"><code>context</code></a> will be <code>None</code>
+and the forbidden passwords list will not get added to the context in the above implementation. As such, <code>validate_user_passwords()</code> would not carry out the desired password validation.</p>
 <p>More details about validation context can be found in the <a href="../../concepts/validators/#validation-context">validators documentation</a>.</p>
+<div class="admonition tip">
+<p class="admonition-title">Logfire integration</p>
+<p>The <a href="../../integrations/logfire/">Logfire integration</a> also records the message from your custom validators.</p>
+</div>
 
 
 
@@ -4276,7 +4310,7 @@ that ensures a <a class="autorefs autorefs-external" href="https://docs.python.o
                 
   <script src="/flarelytics/client.js"></script>
       <script>
-    window.mkdocs_run_deps = ["https://docs.pydantic.dev/dev/pydantic-2.14.0a0+dev-py3-none-any.whl", "email-validator>=2.0.0", "pydantic-core==2.46.0", "pydantic-extra-types==2.10.6"]
+    window.mkdocs_run_deps = ["pydantic==2.14.0a1", "email-validator>=2.0.0", "pydantic-core==2.47.0", "pydantic-extra-types==2.10.6"]
     </script>
 
               </article>

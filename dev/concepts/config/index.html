@@ -121,7 +121,7 @@ What's new &mdash; we've launched
 <a href="https://pydantic.dev/articles/logfire-announcement">Pydantic Logfire</a>
 <img alt="🔥" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.0.3/assets/svg/1f525.svg" title=":fire:">
 to help you monitor and understand your
-<a href="https://logfire.pydantic.dev/docs/integrations/pydantic/" id="logfire-app-type" target="_blank">Pydantic validations.</a>
+<a href="https://pydantic.dev/docs/logfire/integrations/pydantic/" id="logfire-app-type" target="_blank">Pydantic validations.</a>
 
           </div>
           
@@ -1168,6 +1168,17 @@ to help you monitor and understand your
     <span class="md-ellipsis">
       
         Change behaviour globally
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plugin-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plugin settings
       
     </span>
   </a>
@@ -3262,6 +3273,34 @@ to help you monitor and understand your
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../errors/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting with Logfire
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3959,6 +3998,17 @@ to help you monitor and understand your
 </li>
       
         <li class="md-nav__item">
+  <a href="#plugin-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plugin settings
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#configuration-propagation" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4045,7 +4095,7 @@ specified for Pydantic's supported types.</p>
 </ul>
 <p>Unlike the <a class="autorefs autorefs-internal" href="../../api/base_model/#pydantic.BaseModel.model_config"><code>model_config</code></a> class attribute,
   static type checkers will recognize class arguments. For <code>frozen</code>, any instance
-  mutation will be flagged as an type checking error.</p>
+  mutation will be flagged as a type checking error.</p>
 <h2 id="configuration-on-pydantic-dataclasses">Configuration on Pydantic dataclasses<a class="headerlink" href="#configuration-on-pydantic-dataclasses" title="Permanent link">&para;</a></h2>
 <p><a href="../dataclasses/">Pydantic dataclasses</a> also support configuration (read more in the
 <a href="../dataclasses/#dataclass-config">dedicated section</a>).</p>
@@ -4161,6 +4211,21 @@ with a custom configuration, as the configuration is inherited:</p>
 <p>If your model inherits from multiple bases, Pydantic currently <em>doesn't</em> follow the
 <a href="https://docs.python.org/3/glossary.html#term-method-resolution-order">MRO</a>. For more details, see <a href="https://github.com/pydantic/pydantic/issues/9992">this issue</a>.</p>
 </div>
+<h2 id="plugin-settings">Plugin settings<a class="headerlink" href="#plugin-settings" title="Permanent link">&para;</a></h2>
+<p>The <a class="autorefs autorefs-internal" href="../../api/config/#pydantic.config.ConfigDict.plugin_settings"><code>plugin_settings</code></a> configuration value passes options to
+Pydantic plugins (code that hooks into validation, usually for tooling that observes it rather than for
+changing validation behaviour). Its value is a dictionary keyed by plugin name, so a given plugin reads
+only its own entry.</p>
+<p>The main plugin in use today is <a href="../../integrations/logfire/">Logfire</a>'s, which records validations for
+observability. You can tune what it records per model, for instance recording only failures for one
+particular model:</p>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">User</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">,</span> <span class="n">plugin_settings</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;logfire&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;record&#39;</span><span class="p">:</span> <span class="s1">&#39;failure&#39;</span><span class="p">}}):</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">email</span><span class="p">:</span> <span class="nb">str</span>
+</code></pre></div>
 <h2 id="configuration-propagation">Configuration propagation<a class="headerlink" href="#configuration-propagation" title="Permanent link">&para;</a></h2>
 <p>When using types that support configuration as field annotations, configuration may not be propagated:</p>
 <ul>
@@ -4282,7 +4347,7 @@ with a custom configuration, as the configuration is inherited:</p>
                 
   <script src="/flarelytics/client.js"></script>
       <script>
-    window.mkdocs_run_deps = ["https://docs.pydantic.dev/dev/pydantic-2.14.0a0+dev-py3-none-any.whl", "email-validator>=2.0.0", "pydantic-core==2.46.0", "pydantic-extra-types==2.10.6"]
+    window.mkdocs_run_deps = ["pydantic==2.14.0a1", "email-validator>=2.0.0", "pydantic-core==2.47.0", "pydantic-extra-types==2.10.6"]
     </script>
 
               </article>

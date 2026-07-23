@@ -87,7 +87,7 @@ except ValidationError as ve:
     'loc': (),
     'msg': 'Assertion failed, Invalid tzinfo: Europe/London, expected: America/Los_Angeles',
     'type': 'assertion_error',
-    'url': 'https://errors.pydantic.dev/2.8/v/assertion_error'}]
+    'url': 'https://errors.pydantic.dev/2/v/assertion_error'}]
     """
 
 ```
@@ -168,7 +168,7 @@ except ValidationError as e:
     'loc': (),
     'msg': 'Assertion failed, Value out of bounds',
     'type': 'assertion_error',
-    'url': 'https://errors.pydantic.dev/2.8/v/assertion_error'}]
+    'url': 'https://errors.pydantic.dev/2/v/assertion_error'}]
     """
 
 ```
@@ -271,7 +271,7 @@ except ValidationError as e:
 
 ```
 
-Alternatively, a custom validator can be used in the nested model class (`User`), with the forbidden passwords data from the parent model being passed in via validation context.
+Alternatively, a custom validator can be used in the nested model class (`User`), with the forbidden passwords data from the parent model being passed in via [validation context](../../concepts/validators/#validation-context).
 
 Warning
 
@@ -331,6 +331,10 @@ except ValidationError as e:
 
 ```
 
-Note that if the context property is not included in `model_validate`, then `info.context` will be `None` and the forbidden passwords list will not get added to the context in the above implementation. As such, `validate_user_passwords` would not carry out the desired password validation.
+Note that if the context property is not included in model_validate(), then context will be `None` and the forbidden passwords list will not get added to the context in the above implementation. As such, `validate_user_passwords()` would not carry out the desired password validation.
 
 More details about validation context can be found in the [validators documentation](../../concepts/validators/#validation-context).
+
+Logfire integration
+
+The [Logfire integration](../../integrations/logfire/) also records the message from your custom validators.

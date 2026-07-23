@@ -478,6 +478,10 @@ except ValidationError as exc_info:
 
 For more in depth examples, see [Field Validators](../../concepts/validators/#field-validators).
 
+Logfire integration
+
+Instrumentation of validation errors from field validators is supported by [Logfire](../../integrations/logfire/). See [Troubleshooting validation errors](../../errors/troubleshooting/) for more details.
+
 Parameters:
 
 | Name | Type | Description | Default | | --- | --- | --- | --- | | `*fields` | `str` | The field names the validator should apply to. | `()` | | `mode` | `FieldValidatorModes` | Specifies whether to validate the fields before or after validation. | `'after'` | | `check_fields` | `bool | None` | Whether to check that the fields actually exist on the model. | `None` | | `json_schema_input_type` | `Any` | The input type of the function. This is only used to generate the appropriate JSON Schema (in validation mode) and can only specified when mode is either 'before', 'plain' or 'wrap'. | `PydanticUndefined` |
@@ -537,6 +541,10 @@ def field_validator(  # noqa: D417
     ```
 
     For more in depth examples, see [Field Validators](../concepts/validators.md#field-validators).
+
+    !!! tip "Logfire integration"
+        Instrumentation of validation errors from field validators is supported by [Logfire](../integrations/logfire.md).
+        See [Troubleshooting validation errors](../errors/troubleshooting.md) for more details.
 
     Args:
         *fields: The field names the validator should apply to.
@@ -671,6 +679,10 @@ except ValidationError as e:
 
 For more in depth examples, see [Model Validators](../../concepts/validators/#model-validators).
 
+Logfire integration
+
+Instrumentation of validation errors from model validators is supported by [Logfire](../../integrations/logfire/). See [Troubleshooting validation errors](../../errors/troubleshooting/) for more details.
+
 Parameters:
 
 | Name | Type | Description | Default | | --- | --- | --- | --- | | `mode` | `Literal['wrap', 'before', 'after']` | A required string literal that specifies the validation mode. It can be one of the following: 'wrap', 'before', or 'after'. | *required* |
@@ -723,6 +735,10 @@ def model_validator(
 
     For more in depth examples, see [Model Validators](../concepts/validators.md#model-validators).
 
+    !!! tip "Logfire integration"
+        Instrumentation of validation errors from model validators is supported by [Logfire](../integrations/logfire.md).
+        See [Troubleshooting validation errors](../errors/troubleshooting.md) for more details.
+
     Args:
         mode: A required string literal that specifies the validation mode.
             It can be one of the following: 'wrap', 'before', or 'after'.
@@ -739,7 +755,7 @@ def model_validator(
                 category=PydanticDeprecatedSince212,
                 message=(
                     "Using `@model_validator` with mode='after' on a classmethod is deprecated. Instead, use an instance method. "
-                    f'See the documentation at https://docs.pydantic.dev/{version_short()}/concepts/validators/#model-after-validator.'
+                    f'See the documentation at https://pydantic.dev/docs/validation/{version_short()}/concepts/validators/#model-after-validator.'
                 ),
                 stacklevel=2,
             )

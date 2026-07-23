@@ -111,6 +111,10 @@ print(m.model_dump_json(indent=2))
 
 In addition to the supported types by the standard library json module, Pydantic supports a wide variety of types (date and time types, UUID objects, sets, etc). If an unsupported type is used and can't be serialized to JSON, a PydanticSerializationError exception is raised.
 
+Logfire integration
+
+A serialization error like this often only shows up when a particular object reaches the point of being serialized (commonly when building a response), so it can be easy to miss until it happens in production. Like any exception, it's captured by [Logfire](../../integrations/logfire/) if you've instrumented your application, in the context of the request that triggered it, and grouped with other occurrences so you can tell a one-off from a recurring problem.
+
 See also
 
 The TypeAdapter.dump_json() method, useful when *not* dealing with Pydantic models.
@@ -529,7 +533,7 @@ This behavior is different from how things worked in Pydantic V1, where we would
 
 ### Polymorphic serialization
 
-Added in v2.13: Polymorphic serialization was added as an better alternative to the [serialize as any](#serializing-as-any) behavior, and only applies to Pydantic models and Pydantic dataclasses.
+Added in v2.13: Polymorphic serialization was added as a better alternative to the [serialize as any](#serializing-as-any) behavior, and only applies to Pydantic models and Pydantic dataclasses.
 
 Polymorphic serialization is the behavior of serializing a model (or [Pydantic dataclass](../dataclasses/)) instance according to the serialization schema of such instance, rather that the schema of the class used as the type. This will expose all the data defined on the subclass in the serialized payload.
 

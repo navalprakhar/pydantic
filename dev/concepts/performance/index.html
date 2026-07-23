@@ -121,7 +121,7 @@ What's new &mdash; we've launched
 <a href="https://pydantic.dev/articles/logfire-announcement">Pydantic Logfire</a>
 <img alt="🔥" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.0.3/assets/svg/1f525.svg" title=":fire:">
 to help you monitor and understand your
-<a href="https://logfire.pydantic.dev/docs/integrations/pydantic/" id="logfire-app-type" target="_blank">Pydantic validations.</a>
+<a href="https://pydantic.dev/docs/logfire/integrations/pydantic/" id="logfire-app-type" target="_blank">Pydantic validations.</a>
 
           </div>
           
@@ -3288,6 +3288,34 @@ to help you monitor and understand your
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../errors/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting with Logfire
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -4048,6 +4076,8 @@ to help you monitor and understand your
 
 <h1 id="performance-tips">Performance tips<a class="headerlink" href="#performance-tips" title="Permanent link">&para;</a></h1>
 <p>In most cases Pydantic won't be your bottleneck, only follow this if you're sure it's necessary.</p>
+<p>To find where validation time actually goes in a running application, <a href="../../integrations/logfire/">Logfire</a>
+records the duration of each Pydantic validation as a span.</p>
 <h2 id="in-general-use-model_validate_json-not-model_validatejsonloads">In general, use <code>model_validate_json()</code> not <code>model_validate(json.loads(...))</code><a class="headerlink" href="#in-general-use-model_validate_json-not-model_validatejsonloads" title="Permanent link">&para;</a></h2>
 <p>On <code>model_validate(json.loads(...))</code>, the JSON is parsed in Python, then converted to a dict, then it's validated internally.
 On the other hand, <code>model_validate_json()</code> already performs the validation internally.</p>
@@ -4061,7 +4091,7 @@ Once these changes are merged, we should be at the point where <code>model_valid
 <p>The idea here is to avoid constructing validators and serializers more than necessary. Each time a <code>TypeAdapter</code> is instantiated,
 it will construct a new validator and serializer. If you're using a <code>TypeAdapter</code> in a function, it will be instantiated each time
 the function is called. Instead, instantiate it once, and reuse it.</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1"><img alt="❌" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/274c.svg" title=":x:" /> Bad</label><label for="__tabbed_1_2"><img alt="✅" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/2705.svg" title=":white_check_mark:" /> Good</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1"><img alt="❌" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/274c.svg" title=":x:" /> Bad</label><label for="__tabbed_1_2"><img alt="✅" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/2705.svg" title=":white_check_mark:" /> Good</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">TypeAdapter</span>
@@ -4292,7 +4322,7 @@ trading off visibility for performance.</p>
                 
   <script src="/flarelytics/client.js"></script>
       <script>
-    window.mkdocs_run_deps = ["https://docs.pydantic.dev/dev/pydantic-2.14.0a0+dev-py3-none-any.whl", "email-validator>=2.0.0", "pydantic-core==2.46.0", "pydantic-extra-types==2.10.6"]
+    window.mkdocs_run_deps = ["pydantic==2.14.0a1", "email-validator>=2.0.0", "pydantic-core==2.47.0", "pydantic-extra-types==2.10.6"]
     </script>
 
               </article>

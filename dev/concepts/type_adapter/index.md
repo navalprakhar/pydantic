@@ -113,6 +113,10 @@ Performance considerations
 
 When creating an instance of TypeAdapter, the provided type must be analyzed and converted into a pydantic-core schema. This comes with some non-trivial overhead, so it is recommended to create a `TypeAdapter` for a given type just once and reuse it in loops or other performance-critical code.
 
+Logfire integration
+
+As with Pydantic models, the [Logfire integration](../../integrations/logfire/) records validation errors for type adapters.
+
 ## Rebuilding a `TypeAdapter`'s schema
 
 Added in v2.10.

@@ -217,7 +217,7 @@ def build_schema_type_to_method(
 generate_definitions(
     inputs: Sequence[
         tuple[JsonSchemaKeyT, JsonSchemaMode, CoreSchema]
-    ]
+    ],
 ) -> tuple[
     dict[
         tuple[JsonSchemaKeyT, JsonSchemaMode],
@@ -757,6 +757,59 @@ def float_schema(self, schema: core_schema.FloatSchema) -> JsonSchemaValue:
     json_schema: dict[str, Any] = {'type': 'number'}
     self.update_with_validations(json_schema, schema, self.ValidationsMapping.numeric)
     json_schema = {k: v for k, v in json_schema.items() if v not in {math.inf, -math.inf}}
+    return json_schema
+
+```
+
+### fraction_schema
+
+```python
+fraction_schema(schema: FractionSchema) -> JsonSchemaValue
+
+```
+
+Generates a JSON schema that matches a fraction value.
+
+Parameters:
+
+| Name | Type | Description | Default | | --- | --- | --- | --- | | `schema` | `FractionSchema` | The core schema. | *required* |
+
+Returns:
+
+| Type | Description | | --- | --- | | `JsonSchemaValue` | The generated JSON schema. |
+
+Source code in `pydantic/json_schema.py`
+
+```python
+def fraction_schema(self, schema: core_schema.FractionSchema) -> JsonSchemaValue:
+    """Generates a JSON schema that matches a fraction value.
+
+    Args:
+        schema: The core schema.
+
+    Returns:
+        The generated JSON schema.
+
+    """
+    json_schema: JsonSchemaValue = {'type': 'string', 'format': 'fraction'}
+    if self.mode == 'validation':
+        le = schema.get('le')
+        ge = schema.get('ge')
+        lt = schema.get('lt')
+        gt = schema.get('gt')
+        json_schema = {
+            'anyOf': [
+                self.float_schema(
+                    core_schema.float_schema(
+                        le=None if le is None else float(le),
+                        ge=None if ge is None else float(ge),
+                        lt=None if lt is None else float(lt),
+                        gt=None if gt is None else float(gt),
+                    )
+                ),
+                json_schema,
+            ],
+        }
     return json_schema
 
 ```

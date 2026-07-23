@@ -121,7 +121,7 @@ What's new &mdash; we've launched
 <a href="https://pydantic.dev/articles/logfire-announcement">Pydantic Logfire</a>
 <img alt="🔥" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.0.3/assets/svg/1f525.svg" title=":fire:">
 to help you monitor and understand your
-<a href="https://logfire.pydantic.dev/docs/integrations/pydantic/" id="logfire-app-type" target="_blank">Pydantic validations.</a>
+<a href="https://pydantic.dev/docs/logfire/integrations/pydantic/" id="logfire-app-type" target="_blank">Pydantic validations.</a>
 
           </div>
           
@@ -3512,6 +3512,34 @@ to help you monitor and understand your
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../errors/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting with Logfire
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -4986,6 +5014,14 @@ will contain information about all of the errors and how they happened.</p>
 <span class="sd">      Input should be a valid number, unable to parse string as a number [type=float_parsing, input_value=&#39;not a float&#39;, input_type=str]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 </code></pre></div>
+<div class="admonition tip">
+<p class="admonition-title">Logfire integration</p>
+<p>In an example like this one, the offending <code>data</code> is right there in the code. In a running application
+it usually isn't. The exception says which fields failed, but the input that produced it is whatever a
+user, API, or job happened to send at the time. If you need to see that input as well,
+<a href="../../errors/troubleshooting/">Logfire can record failed validations</a> together with the data that
+caused them.</p>
+</div>
 <h2 id="arbitrary-class-instances">Arbitrary class instances<a class="headerlink" href="#arbitrary-class-instances" title="Permanent link">&para;</a></h2>
 <p>(Formerly known as "ORM Mode"/<code>from_orm()</code>).</p>
 <p>When using the <a class="autorefs autorefs-internal" href="../../api/base_model/#pydantic.BaseModel.model_validate"><code>model_validate()</code></a> method, Pydantic can also validate arbitrary objects,
@@ -5845,27 +5881,6 @@ via the first and only argument.</p>
 <span class="nb">print</span><span class="p">(</span><span class="n">PetsByName</span><span class="o">.</span><span class="n">model_validate</span><span class="p">({</span><span class="s1">&#39;Otis&#39;</span><span class="p">:</span> <span class="s1">&#39;dog&#39;</span><span class="p">,</span> <span class="s1">&#39;Milo&#39;</span><span class="p">:</span> <span class="s1">&#39;cat&#39;</span><span class="p">}))</span>
 <span class="c1">#&gt; root={&#39;Otis&#39;: &#39;dog&#39;, &#39;Milo&#39;: &#39;cat&#39;}</span>
 </code></pre></div>
-<p>If you want to access items in the <code>root</code> field directly or to iterate over the items, you can implement
-custom <code>__iter__</code> and <code>__getitem__</code> functions, as shown in the following example.</p>
-<div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">RootModel</span>
-
-
-<span class="k">class</span><span class="w"> </span><span class="nc">Pets</span><span class="p">(</span><span class="n">RootModel</span><span class="p">):</span>
-    <span class="n">root</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">[</span><span class="n">item</span><span class="p">]</span>
-
-
-<span class="n">pets</span> <span class="o">=</span> <span class="n">Pets</span><span class="o">.</span><span class="n">model_validate</span><span class="p">([</span><span class="s1">&#39;dog&#39;</span><span class="p">,</span> <span class="s1">&#39;cat&#39;</span><span class="p">])</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">pets</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-<span class="c1">#&gt; dog</span>
-<span class="nb">print</span><span class="p">([</span><span class="n">pet</span> <span class="k">for</span> <span class="n">pet</span> <span class="ow">in</span> <span class="n">pets</span><span class="p">])</span>
-<span class="c1">#&gt; [&#39;dog&#39;, &#39;cat&#39;]</span>
-</code></pre></div>
 <p>You can also create subclasses of the parametrized root model directly:</p>
 <div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">RootModel</span>
 
@@ -6197,7 +6212,7 @@ model as is. You can override this behaviour by setting
                 
   <script src="/flarelytics/client.js"></script>
       <script>
-    window.mkdocs_run_deps = ["https://docs.pydantic.dev/dev/pydantic-2.14.0a0+dev-py3-none-any.whl", "email-validator>=2.0.0", "pydantic-core==2.46.0", "pydantic-extra-types==2.10.6"]
+    window.mkdocs_run_deps = ["pydantic==2.14.0a1", "email-validator>=2.0.0", "pydantic-core==2.47.0", "pydantic-extra-types==2.10.6"]
     </script>
 
               </article>

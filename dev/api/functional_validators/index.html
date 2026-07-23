@@ -121,7 +121,7 @@ What's new &mdash; we've launched
 <a href="https://pydantic.dev/articles/logfire-announcement">Pydantic Logfire</a>
 <img alt="🔥" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.0.3/assets/svg/1f525.svg" title=":fire:">
 to help you monitor and understand your
-<a href="https://logfire.pydantic.dev/docs/integrations/pydantic/" id="logfire-app-type" target="_blank">Pydantic validations.</a>
+<a href="https://pydantic.dev/docs/logfire/integrations/pydantic/" id="logfire-app-type" target="_blank">Pydantic validations.</a>
 
           </div>
           
@@ -3407,6 +3407,34 @@ to help you monitor and understand your
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../errors/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting with Logfire
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -5424,9 +5452,9 @@ the populated custom type.</p>
 
                   <details class="quote">
                     <summary>Source code in <code>pydantic/functional_validators.py</code></summary>
-                    <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">884</span>
-<span class="normal">885</span>
-<span class="normal">886</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_type</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">_FromTypeT</span><span class="p">],</span> <span class="o">/</span><span class="p">,</span> <span class="n">instantiation_hook</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">_FromTypeT</span><span class="p">],</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+                    <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">892</span>
+<span class="normal">893</span>
+<span class="normal">894</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_type</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">_FromTypeT</span><span class="p">],</span> <span class="o">/</span><span class="p">,</span> <span class="n">instantiation_hook</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">_FromTypeT</span><span class="p">],</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">from_type</span> <span class="o">=</span> <span class="n">from_type</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">instantiation_hook</span> <span class="o">=</span> <span class="n">instantiation_hook</span>
 </code></pre></div></td></tr></table></div>
@@ -5542,6 +5570,11 @@ the populated custom type.</p>
 <span class="sd">    &#39;&#39;&#39;</span>
 </code></pre></div></p>
 <p>For more in depth examples, see <a href="../../concepts/validators/#field-validators">Field Validators</a>.</p>
+<div class="admonition tip">
+<p class="admonition-title">Logfire integration</p>
+<p>Instrumentation of validation errors from field validators is supported by <a href="../../integrations/logfire/">Logfire</a>.
+See <a href="../../errors/troubleshooting/">Troubleshooting validation errors</a> for more details.</p>
+</div>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -5759,7 +5792,11 @@ when <code>mode</code> is either <code>'before'</code>, <code>'plain'</code> or 
 <span class="normal">512</span>
 <span class="normal">513</span>
 <span class="normal">514</span>
-<span class="normal">515</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">field_validator</span><span class="p">(</span>  <span class="c1"># noqa: D417</span>
+<span class="normal">515</span>
+<span class="normal">516</span>
+<span class="normal">517</span>
+<span class="normal">518</span>
+<span class="normal">519</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">field_validator</span><span class="p">(</span>  <span class="c1"># noqa: D417</span>
     <span class="n">field</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="o">/</span><span class="p">,</span>
     <span class="o">*</span><span class="n">fields</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -5807,6 +5844,10 @@ when <code>mode</code> is either <code>'before'</code>, <code>'plain'</code> or 
 <span class="sd">    ```</span>
 
 <span class="sd">    For more in depth examples, see [Field Validators](../concepts/validators.md#field-validators).</span>
+
+<span class="sd">    !!! tip &quot;Logfire integration&quot;</span>
+<span class="sd">        Instrumentation of validation errors from field validators is supported by [Logfire](../integrations/logfire.md).</span>
+<span class="sd">        See [Troubleshooting validation errors](../errors/troubleshooting.md) for more details.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        *fields: The field names the validator should apply to.</span>
@@ -5934,6 +5975,11 @@ when <code>mode</code> is either <code>'before'</code>, <code>'plain'</code> or 
 <span class="sd">    &#39;&#39;&#39;</span>
 </code></pre></div></p>
 <p>For more in depth examples, see <a href="../../concepts/validators/#model-validators">Model Validators</a>.</p>
+<div class="admonition tip">
+<p class="admonition-title">Logfire integration</p>
+<p>Instrumentation of validation errors from model validators is supported by <a href="../../integrations/logfire/">Logfire</a>.
+See <a href="../../errors/troubleshooting/">Troubleshooting validation errors</a> for more details.</p>
+</div>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -5992,11 +6038,7 @@ It can be one of the following: 'wrap', 'before', or 'after'.</p>
 
             <details class="quote">
               <summary>Source code in <code>pydantic/functional_validators.py</code></summary>
-              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">672</span>
-<span class="normal">673</span>
-<span class="normal">674</span>
-<span class="normal">675</span>
-<span class="normal">676</span>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">676</span>
 <span class="normal">677</span>
 <span class="normal">678</span>
 <span class="normal">679</span>
@@ -6057,7 +6099,15 @@ It can be one of the following: 'wrap', 'before', or 'after'.</p>
 <span class="normal">734</span>
 <span class="normal">735</span>
 <span class="normal">736</span>
-<span class="normal">737</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">model_validator</span><span class="p">(</span>
+<span class="normal">737</span>
+<span class="normal">738</span>
+<span class="normal">739</span>
+<span class="normal">740</span>
+<span class="normal">741</span>
+<span class="normal">742</span>
+<span class="normal">743</span>
+<span class="normal">744</span>
+<span class="normal">745</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">model_validator</span><span class="p">(</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">&#39;wrap&#39;</span><span class="p">,</span> <span class="s1">&#39;before&#39;</span><span class="p">,</span> <span class="s1">&#39;after&#39;</span><span class="p">],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
@@ -6098,6 +6148,10 @@ It can be one of the following: 'wrap', 'before', or 'after'.</p>
 
 <span class="sd">    For more in depth examples, see [Model Validators](../concepts/validators.md#model-validators).</span>
 
+<span class="sd">    !!! tip &quot;Logfire integration&quot;</span>
+<span class="sd">        Instrumentation of validation errors from model validators is supported by [Logfire](../integrations/logfire.md).</span>
+<span class="sd">        See [Troubleshooting validation errors](../errors/troubleshooting.md) for more details.</span>
+
 <span class="sd">    Args:</span>
 <span class="sd">        mode: A required string literal that specifies the validation mode.</span>
 <span class="sd">            It can be one of the following: &#39;wrap&#39;, &#39;before&#39;, or &#39;after&#39;.</span>
@@ -6114,7 +6168,7 @@ It can be one of the following: 'wrap', 'before', or 'after'.</p>
                 <span class="n">category</span><span class="o">=</span><span class="n">PydanticDeprecatedSince212</span><span class="p">,</span>
                 <span class="n">message</span><span class="o">=</span><span class="p">(</span>
                     <span class="s2">&quot;Using `@model_validator` with mode=&#39;after&#39; on a classmethod is deprecated. Instead, use an instance method. &quot;</span>
-                    <span class="sa">f</span><span class="s1">&#39;See the documentation at https://docs.pydantic.dev/</span><span class="si">{</span><span class="n">version_short</span><span class="p">()</span><span class="si">}</span><span class="s1">/concepts/validators/#model-after-validator.&#39;</span>
+                    <span class="sa">f</span><span class="s1">&#39;See the documentation at https://pydantic.dev/docs/validation/</span><span class="si">{</span><span class="n">version_short</span><span class="p">()</span><span class="si">}</span><span class="s1">/concepts/validators/#model-after-validator.&#39;</span>
                 <span class="p">),</span>
                 <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
             <span class="p">)</span>
@@ -6203,7 +6257,7 @@ It can be one of the following: 'wrap', 'before', or 'after'.</p>
                 
   <script src="/flarelytics/client.js"></script>
       <script>
-    window.mkdocs_run_deps = ["https://docs.pydantic.dev/dev/pydantic-2.14.0a0+dev-py3-none-any.whl", "email-validator>=2.0.0", "pydantic-core==2.46.0", "pydantic-extra-types==2.10.6"]
+    window.mkdocs_run_deps = ["pydantic==2.14.0a1", "email-validator>=2.0.0", "pydantic-core==2.47.0", "pydantic-extra-types==2.10.6"]
     </script>
 
               </article>

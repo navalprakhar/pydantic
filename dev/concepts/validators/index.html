@@ -121,7 +121,7 @@ What's new &mdash; we've launched
 <a href="https://pydantic.dev/articles/logfire-announcement">Pydantic Logfire</a>
 <img alt="🔥" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.0.3/assets/svg/1f525.svg" title=":fire:">
 to help you monitor and understand your
-<a href="https://logfire.pydantic.dev/docs/integrations/pydantic/" id="logfire-app-type" target="_blank">Pydantic validations.</a>
+<a href="https://pydantic.dev/docs/logfire/integrations/pydantic/" id="logfire-app-type" target="_blank">Pydantic validations.</a>
 
           </div>
           
@@ -3335,6 +3335,34 @@ to help you monitor and understand your
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../errors/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting with Logfire
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -4735,6 +4763,8 @@ decorator.</p>
 </code></pre></div>
 </li>
 </ul>
+<p>When a validator rejects data in production, <a href="../../errors/troubleshooting/">Logfire</a> records the input
+alongside each validation, so you can see the value that broke the rule.</p>
 <h2 id="validation-info">Validation info<a class="headerlink" href="#validation-info" title="Permanent link">&para;</a></h2>
 <p>Both the field and model validators callables (in all modes) can optionally take an extra
 <a class="autorefs autorefs-internal" href="../../api/pydantic_core_schema/#pydantic_core.core_schema.ValidationInfo"><code>ValidationInfo</code></a> argument, providing useful extra information, such as:</p>
@@ -4929,7 +4959,7 @@ logic applies.</p>
 </ol>
 </li>
 <li>
-<p><a class="autorefs autorefs-internal" href="../../api/functional_validators/#pydantic.functional_validators.ValidateAs"><code>ValidateAs</code></a> can be used to validate an custom type from a
+<p><a class="autorefs autorefs-internal" href="../../api/functional_validators/#pydantic.functional_validators.ValidateAs"><code>ValidateAs</code></a> can be used to validate a custom type from a
   type natively supported by Pydantic. This is particularly useful when using custom types with multiple fields.</p>
 <div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Annotated</span>
 
@@ -5097,7 +5127,7 @@ a <a href="#field-plain-validator"><em>plain</em></a> validator, in which case <
                 
   <script src="/flarelytics/client.js"></script>
       <script>
-    window.mkdocs_run_deps = ["https://docs.pydantic.dev/dev/pydantic-2.14.0a0+dev-py3-none-any.whl", "email-validator>=2.0.0", "pydantic-core==2.46.0", "pydantic-extra-types==2.10.6"]
+    window.mkdocs_run_deps = ["pydantic==2.14.0a1", "email-validator>=2.0.0", "pydantic-core==2.47.0", "pydantic-extra-types==2.10.6"]
     </script>
 
               </article>

@@ -18,6 +18,10 @@ The ErrorDetails object is a dictionary. It contains the following:
 
 The first item in the loc list will be the field where the error occurred, and if the field is a [sub-model](../../concepts/models/#nested-models), subsequent items will be present to indicate the nested location of the error.
 
+Logfire integration
+
+[Logfire](../troubleshooting/) can be used to record validation errors, with the input that produced it.
+
 As a demonstration:
 
 ```python

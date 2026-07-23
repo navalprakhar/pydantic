@@ -168,7 +168,7 @@ Built-in type: float.
 #### Validation
 
 - Floats are validated as-is.
-- String and bytes are attempted to be converted to floats and validated as-is. (see the [Rust implementation](https://doc.rust-lang.org/src/core/num/dec2flt/mod.rs.html) for details).
+- String and bytes are attempted to be converted to floats and validated as-is. (see the [Rust implementation](https://doc.rust-lang.org/src/core/num/float_parse.rs.html) for details).
 - If the input has a __float__() method, it will be called to convert the input into a float. If `__float__()` is not defined, it falls back to __index__(). This includes (but not limited to) the Decimal and Fraction types.
 
 #### Constraints
@@ -816,7 +816,7 @@ Any collections.abc.Sequence instance (expect strings and bytes) is accepted. It
 
 Strings aren't treated as sequences
 
-While strings are technically valid sequence instances, this is frequently not intended as is a common source of bugs.
+While strings are technically valid sequence instances, this is frequently not intended, and is a common source of bugs.
 
 As a result, Pydantic will *not* accept strings and bytes for the Sequence type (see example below).
 
@@ -1250,6 +1250,7 @@ Standard library types:
 - pathlib.Path.
 - pathlib.PurePath.
 - pathlib.PosixPath.
+- pathlib.WindowsPath.
 - pathlib.PurePosixPath.
 - pathlib.PureWindowsPath.
 - os.PathLike (must be parameterized with str, bytes or Any).

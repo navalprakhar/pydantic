@@ -164,7 +164,7 @@ class BaseModel(metaclass=_model_construction.ModelMetaclass):
             warnings.warn(
                 'A custom validator is returning a value other than `self`.\n'
                 "Returning anything other than `self` from a top level model validator isn't supported when validating via `__init__`.\n"
-                'See the `model_validator` docs (https://docs.pydantic.dev/latest/concepts/validators/#model-validators) for more details.',
+                f'See the `model_validator` docs (https://pydantic.dev/docs/validation/{version_short()}/concepts/validators/#model-validators) for more details.',
                 stacklevel=2,
             )
 
@@ -321,7 +321,7 @@ class BaseModel(metaclass=_model_construction.ModelMetaclass):
             # Selectively deepcopy fields that are not being updated:
             for k, v in copied.__dict__.items():
                 if k not in update:
-                    copied.__dict__[k] = deepcopy(v, memo)
+                    copied.__dict__[k] = deepcopy(v, memo)  # pyright: ignore[reportIndexIssue] (https://github.com/microsoft/pyright/issues/11548)
             if copied.__pydantic_extra__ is not None:
                 for k, v in copied.__pydantic_extra__.items():
                     if k not in update:
@@ -339,13 +339,13 @@ class BaseModel(metaclass=_model_construction.ModelMetaclass):
             if self.model_config.get('extra') == 'allow':
                 for k, v in update.items():
                     if k in self.__pydantic_fields__:
-                        copied.__dict__[k] = v
+                        copied.__dict__[k] = v  # pyright: ignore[reportIndexIssue] (https://github.com/microsoft/pyright/issues/11548)
                     else:
                         if copied.__pydantic_extra__ is None:
                             copied.__pydantic_extra__ = {}
                         copied.__pydantic_extra__[k] = v
             else:
-                copied.__dict__.update(update)
+                copied.__dict__.update(update)  # pyright: ignore[reportAttributeAccessIssue] (https://github.com/microsoft/pyright/issues/11548)
 
             copied.__pydantic_fields_set__.update(update.keys())
 
@@ -580,42 +580,54 @@ class BaseModel(metaclass=_model_construction.ModelMetaclass):
             Returns `None` if the schema is already "complete" and rebuilding was not required.
             If rebuilding _was_ required, returns `True` if rebuilding was successful, otherwise `False`.
         """
-        already_complete = cls.__pydantic_complete__
-        if already_complete and not force:
+        # As the rebuild lock is global (not per model class), avoid needlessly holding it if the model is
+        # already complete:
+        if cls.__pydantic_complete__ and not force:
             return None
 
-        cls.__pydantic_complete__ = False
+        with _rebuild_lock:
+            # Re-check inside the lock, as another thread may have rebuilt the model while we were waiting:
+            already_complete = cls.__pydantic_complete__
+            if already_complete and not force:
+                return None
 
-        for attr in ('__pydantic_core_schema__', '__pydantic_validator__', '__pydantic_serializer__'):
-            if attr in cls.__dict__ and not isinstance(getattr(cls, attr), _mock_val_ser.MockValSer):
-                # Deleting the validator/serializer is necessary as otherwise they can get reused in
-                # pydantic-core. We do so only if they aren't mock instances, otherwise — as `model_rebuild()`
-                # isn't thread-safe — concurrent model instantiations can lead to the parent validator being used.
-                # Same applies for the core schema that can be reused in schema generation.
-                delattr(cls, attr)
+            cls.__pydantic_complete__ = False
 
-        if _types_namespace is not None:
-            rebuild_ns = _types_namespace
-        elif _parent_namespace_depth > 0:
-            rebuild_ns = _typing_extra.parent_frame_namespace(parent_depth=_parent_namespace_depth, force=True) or {}
-        else:
-            rebuild_ns = {}
+            for attr in ('__pydantic_core_schema__', '__pydantic_validator__', '__pydantic_serializer__'):
+                if attr in cls.__dict__ and not isinstance(
+                    getattr(cls, attr), (_mock_val_ser.MockCoreSchema, _mock_val_ser.MockValSer)
+                ):
+                    # Deleting the validator/serializer is necessary as otherwise they can get reused in
+                    # pydantic-core. Same applies for the core schema that can be reused in schema generation.
+                    # We do so only if they aren't mock instances, otherwise concurrent reads of these attributes
+                    # — performed without holding the rebuild lock (e.g. when instantiating the model) — can
+                    # resolve them from the parent class.
+                    delattr(cls, attr)
 
-        parent_ns = _model_construction.unpack_lenient_weakvaluedict(cls.__pydantic_parent_namespace__) or {}
+            if _types_namespace is not None:
+                rebuild_ns = _types_namespace
+            elif _parent_namespace_depth > 0:
+                rebuild_ns = (
+                    _typing_extra.parent_frame_namespace(parent_depth=_parent_namespace_depth, force=True) or {}
+                )
+            else:
+                rebuild_ns = {}
 
-        ns_resolver = _namespace_utils.NsResolver(
-            parent_namespace={**rebuild_ns, **parent_ns},
-        )
+            parent_ns = _model_construction.unpack_lenient_weakvaluedict(cls.__pydantic_parent_namespace__) or {}
 
-        return _model_construction.complete_model_class(
-            cls,
-            _config.ConfigWrapper(cls.model_config, check=False),
-            ns_resolver,
-            raise_errors=raise_errors,
-            # If the model was already complete, we don't need to call the hook again.
-            call_on_complete_hook=not already_complete,
-            is_force_rebuild=force,
-        )
+            ns_resolver = _namespace_utils.NsResolver(
+                parent_namespace={**rebuild_ns, **parent_ns},
+            )
+
+            return _model_construction.complete_model_class(
+                cls,
+                _config.ConfigWrapper(cls.model_config, check=False),
+                ns_resolver,
+                raise_errors=raise_errors,
+                # If the model was already complete, we don't need to call the hook again.
+                call_on_complete_hook=not already_complete,
+                is_force_rebuild=force,
+            )
 
     @classmethod
     def model_validate(
@@ -630,6 +642,10 @@ class BaseModel(metaclass=_model_construction.ModelMetaclass):
         by_name: bool | None = None,
     ) -> Self:
         """Validate a pydantic model instance.
+
+        !!! tip "Logfire integration"
+            Instrumentation of validation errors are supported by [Logfire](../integrations/logfire.md).
+            See [Troubleshooting validation errors](../errors/troubleshooting.md) for more details.
 
         Args:
             obj: The object to validate.
@@ -681,6 +697,10 @@ class BaseModel(metaclass=_model_construction.ModelMetaclass):
             [JSON Parsing](../concepts/json.md#json-parsing)
 
         Validate the given JSON data against the Pydantic model.
+
+        !!! tip "Logfire integration"
+            Instrumentation of validation errors are supported by [Logfire](../integrations/logfire.md).
+            See [Troubleshooting validation errors](../errors/troubleshooting.md) for more details.
 
         Args:
             json_data: The JSON data to validate.
@@ -1654,7 +1674,7 @@ def __init__(self, /, **data: Any) -> None:
         warnings.warn(
             'A custom validator is returning a value other than `self`.\n'
             "Returning anything other than `self` from a top level model validator isn't supported when validating via `__init__`.\n"
-            'See the `model_validator` docs (https://docs.pydantic.dev/latest/concepts/validators/#model-validators) for more details.',
+            f'See the `model_validator` docs (https://pydantic.dev/docs/validation/{version_short()}/concepts/validators/#model-validators) for more details.',
             stacklevel=2,
         )
 
@@ -1933,7 +1953,7 @@ def model_copy(self, *, update: Mapping[str, Any] | None = None, deep: bool = Fa
         # Selectively deepcopy fields that are not being updated:
         for k, v in copied.__dict__.items():
             if k not in update:
-                copied.__dict__[k] = deepcopy(v, memo)
+                copied.__dict__[k] = deepcopy(v, memo)  # pyright: ignore[reportIndexIssue] (https://github.com/microsoft/pyright/issues/11548)
         if copied.__pydantic_extra__ is not None:
             for k, v in copied.__pydantic_extra__.items():
                 if k not in update:
@@ -1951,13 +1971,13 @@ def model_copy(self, *, update: Mapping[str, Any] | None = None, deep: bool = Fa
         if self.model_config.get('extra') == 'allow':
             for k, v in update.items():
                 if k in self.__pydantic_fields__:
-                    copied.__dict__[k] = v
+                    copied.__dict__[k] = v  # pyright: ignore[reportIndexIssue] (https://github.com/microsoft/pyright/issues/11548)
                 else:
                     if copied.__pydantic_extra__ is None:
                         copied.__pydantic_extra__ = {}
                     copied.__pydantic_extra__[k] = v
         else:
-            copied.__dict__.update(update)
+            copied.__dict__.update(update)  # pyright: ignore[reportAttributeAccessIssue] (https://github.com/microsoft/pyright/issues/11548)
 
         copied.__pydantic_fields_set__.update(update.keys())
 
@@ -2264,7 +2284,7 @@ def model_json_schema(
 
 ```python
 model_parametrized_name(
-    params: tuple[type[Any], ...]
+    params: tuple[type[Any], ...],
 ) -> str
 
 ```
@@ -2388,42 +2408,54 @@ def model_rebuild(
         Returns `None` if the schema is already "complete" and rebuilding was not required.
         If rebuilding _was_ required, returns `True` if rebuilding was successful, otherwise `False`.
     """
-    already_complete = cls.__pydantic_complete__
-    if already_complete and not force:
+    # As the rebuild lock is global (not per model class), avoid needlessly holding it if the model is
+    # already complete:
+    if cls.__pydantic_complete__ and not force:
         return None
 
-    cls.__pydantic_complete__ = False
+    with _rebuild_lock:
+        # Re-check inside the lock, as another thread may have rebuilt the model while we were waiting:
+        already_complete = cls.__pydantic_complete__
+        if already_complete and not force:
+            return None
 
-    for attr in ('__pydantic_core_schema__', '__pydantic_validator__', '__pydantic_serializer__'):
-        if attr in cls.__dict__ and not isinstance(getattr(cls, attr), _mock_val_ser.MockValSer):
-            # Deleting the validator/serializer is necessary as otherwise they can get reused in
-            # pydantic-core. We do so only if they aren't mock instances, otherwise — as `model_rebuild()`
-            # isn't thread-safe — concurrent model instantiations can lead to the parent validator being used.
-            # Same applies for the core schema that can be reused in schema generation.
-            delattr(cls, attr)
+        cls.__pydantic_complete__ = False
 
-    if _types_namespace is not None:
-        rebuild_ns = _types_namespace
-    elif _parent_namespace_depth > 0:
-        rebuild_ns = _typing_extra.parent_frame_namespace(parent_depth=_parent_namespace_depth, force=True) or {}
-    else:
-        rebuild_ns = {}
+        for attr in ('__pydantic_core_schema__', '__pydantic_validator__', '__pydantic_serializer__'):
+            if attr in cls.__dict__ and not isinstance(
+                getattr(cls, attr), (_mock_val_ser.MockCoreSchema, _mock_val_ser.MockValSer)
+            ):
+                # Deleting the validator/serializer is necessary as otherwise they can get reused in
+                # pydantic-core. Same applies for the core schema that can be reused in schema generation.
+                # We do so only if they aren't mock instances, otherwise concurrent reads of these attributes
+                # — performed without holding the rebuild lock (e.g. when instantiating the model) — can
+                # resolve them from the parent class.
+                delattr(cls, attr)
 
-    parent_ns = _model_construction.unpack_lenient_weakvaluedict(cls.__pydantic_parent_namespace__) or {}
+        if _types_namespace is not None:
+            rebuild_ns = _types_namespace
+        elif _parent_namespace_depth > 0:
+            rebuild_ns = (
+                _typing_extra.parent_frame_namespace(parent_depth=_parent_namespace_depth, force=True) or {}
+            )
+        else:
+            rebuild_ns = {}
 
-    ns_resolver = _namespace_utils.NsResolver(
-        parent_namespace={**rebuild_ns, **parent_ns},
-    )
+        parent_ns = _model_construction.unpack_lenient_weakvaluedict(cls.__pydantic_parent_namespace__) or {}
 
-    return _model_construction.complete_model_class(
-        cls,
-        _config.ConfigWrapper(cls.model_config, check=False),
-        ns_resolver,
-        raise_errors=raise_errors,
-        # If the model was already complete, we don't need to call the hook again.
-        call_on_complete_hook=not already_complete,
-        is_force_rebuild=force,
-    )
+        ns_resolver = _namespace_utils.NsResolver(
+            parent_namespace={**rebuild_ns, **parent_ns},
+        )
+
+        return _model_construction.complete_model_class(
+            cls,
+            _config.ConfigWrapper(cls.model_config, check=False),
+            ns_resolver,
+            raise_errors=raise_errors,
+            # If the model was already complete, we don't need to call the hook again.
+            call_on_complete_hook=not already_complete,
+            is_force_rebuild=force,
+        )
 
 ```
 
@@ -2444,6 +2476,10 @@ model_validate(
 ```
 
 Validate a pydantic model instance.
+
+Logfire integration
+
+Instrumentation of validation errors are supported by [Logfire](../../integrations/logfire/). See [Troubleshooting validation errors](../../errors/troubleshooting/) for more details.
 
 Parameters:
 
@@ -2473,6 +2509,10 @@ def model_validate(
     by_name: bool | None = None,
 ) -> Self:
     """Validate a pydantic model instance.
+
+    !!! tip "Logfire integration"
+        Instrumentation of validation errors are supported by [Logfire](../integrations/logfire.md).
+        See [Troubleshooting validation errors](../errors/troubleshooting.md) for more details.
 
     Args:
         obj: The object to validate.
@@ -2532,6 +2572,10 @@ Usage Documentation
 
 Validate the given JSON data against the Pydantic model.
 
+Logfire integration
+
+Instrumentation of validation errors are supported by [Logfire](../../integrations/logfire/). See [Troubleshooting validation errors](../../errors/troubleshooting/) for more details.
+
 Parameters:
 
 | Name | Type | Description | Default | | --- | --- | --- | --- | | `json_data` | `str | bytes | bytearray` | The JSON data to validate. | *required* | | `strict` | `bool | None` | Whether to enforce types strictly. | `None` | | `extra` | `ExtraValues | None` | Whether to ignore, allow, or forbid extra data during model validation. See the extra configuration value for details. | `None` | | `context` | `Any | None` | Extra variables to pass to the validator. | `None` | | `by_alias` | `bool | None` | Whether to use the field's alias when validating against the provided input data. | `None` | | `by_name` | `bool | None` | Whether to use the field's name when validating against the provided input data. | `None` |
@@ -2562,6 +2606,10 @@ def model_validate_json(
         [JSON Parsing](../concepts/json.md#json-parsing)
 
     Validate the given JSON data against the Pydantic model.
+
+    !!! tip "Logfire integration"
+        Instrumentation of validation errors are supported by [Logfire](../integrations/logfire.md).
+        See [Troubleshooting validation errors](../errors/troubleshooting.md) for more details.
 
     Args:
         json_data: The JSON data to validate.
@@ -2726,7 +2774,7 @@ Usage Documentation
 
 [Dynamic Model Creation](../../concepts/models/#dynamic-model-creation)
 
-Dynamically creates and returns a new Pydantic model, in other words, `create_model` dynamically creates a subclass of BaseModel.
+Dynamically creates and returns a new Pydantic model. In other words, `create_model()` dynamically creates a subclass of BaseModel.
 
 Warning
 
@@ -2766,7 +2814,7 @@ def create_model(  # noqa: C901
     """!!! abstract "Usage Documentation"
         [Dynamic Model Creation](../concepts/models.md#dynamic-model-creation)
 
-    Dynamically creates and returns a new Pydantic model, in other words, `create_model` dynamically creates a
+    Dynamically creates and returns a new Pydantic model. In other words, `create_model()` dynamically creates a
     subclass of [`BaseModel`][pydantic.BaseModel].
 
     !!! warning
@@ -2783,7 +2831,7 @@ def create_model(  # noqa: C901
             if `None`, the value is taken from `sys._getframe(1)`
         __validators__: A dictionary of methods that validate fields. The keys are the names of the validation methods to
             be added to the model, and the values are the validation methods themselves. You can read more about functional
-            validators [here](https://docs.pydantic.dev/2.9/concepts/validators/#field-validators).
+            validators [here](../concepts/validators.md#field-validators).
         __cls_kwargs__: A dictionary of keyword arguments for class creation, such as `metaclass`.
         __qualname__: The qualified name of the newly created model.
         **field_definitions: Field definitions of the new model. Either:

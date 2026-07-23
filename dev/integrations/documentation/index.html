@@ -116,7 +116,7 @@ What's new &mdash; we've launched
 <a href="https://pydantic.dev/articles/logfire-announcement">Pydantic Logfire</a>
 <img alt="🔥" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.0.3/assets/svg/1f525.svg" title=":fire:">
 to help you monitor and understand your
-<a href="https://logfire.pydantic.dev/docs/integrations/pydantic/" id="logfire-app-type" target="_blank">Pydantic validations.</a>
+<a href="https://pydantic.dev/docs/logfire/integrations/pydantic/" id="logfire-app-type" target="_blank">Pydantic validations.</a>
 
           </div>
           
@@ -3130,6 +3130,34 @@ to help you monitor and understand your
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../errors/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting with Logfire
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3854,7 +3882,7 @@ Sphinx object inventory to cross-reference the Pydantic API documentation.</p>
 <p>In your <a href="https://www.sphinx-doc.org/en/master/usage/configuration.html">Sphinx configuration</a>,
 add the following to the <a href="https://www.sphinx-doc.org/en/master/usage/extensions/intersphinx.html#configuration"><code>intersphinx</code> extension configuration</a>:</p>
 <div class="language-python highlight"><pre><span></span><code><span class="n">intersphinx_mapping</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;pydantic&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;https://docs.pydantic.dev/latest&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>  <span class="c1"># (1)!</span>
+    <span class="s1">&#39;pydantic&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;https://pydantic.dev/docs/validation/latest&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>  <span class="c1"># (1)!</span>
 <span class="p">}</span>
 </code></pre></div>
 <ol>
@@ -3870,7 +3898,7 @@ import to your <a href="https://mkdocstrings.github.io/usage/#cross-references-t
 <span class="w">    </span><span class="nt">handlers</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">python</span><span class="p">:</span>
 <span class="w">        </span><span class="nt">import</span><span class="p">:</span>
-<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://docs.pydantic.dev/latest/objects.inv</span><span class="w">  </span><span class="c1"># (1)!</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://pydantic.dev/docs/validation/latest/objects.inv</span><span class="w">  </span><span class="c1"># (1)!</span>
 </code></pre></div>
 <ol>
 <li>You can also use <code>dev</code> instead of <code>latest</code> to target the latest documentation build, up to date
@@ -3946,7 +3974,7 @@ import to your <a href="https://mkdocstrings.github.io/usage/#cross-references-t
                 
   <script src="/flarelytics/client.js"></script>
       <script>
-    window.mkdocs_run_deps = ["https://docs.pydantic.dev/dev/pydantic-2.14.0a0+dev-py3-none-any.whl", "email-validator>=2.0.0", "pydantic-core==2.46.0", "pydantic-extra-types==2.10.6"]
+    window.mkdocs_run_deps = ["pydantic==2.14.0a1", "email-validator>=2.0.0", "pydantic-core==2.47.0", "pydantic-extra-types==2.10.6"]
     </script>
 
               </article>

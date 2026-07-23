@@ -45,7 +45,7 @@ On Pydantic models, configuration can be specified in two ways:
 
   ```
 
-Unlike the model_config class attribute, static type checkers will recognize class arguments. For `frozen`, any instance mutation will be flagged as an type checking error.
+Unlike the model_config class attribute, static type checkers will recognize class arguments. For `frozen`, any instance mutation will be flagged as a type checking error.
 
 ## Configuration on Pydantic dataclasses
 
@@ -178,6 +178,22 @@ print(Model.model_config)
 Warning
 
 If your model inherits from multiple bases, Pydantic currently *doesn't* follow the [MRO](https://docs.python.org/3/glossary.html#term-method-resolution-order). For more details, see [this issue](https://github.com/pydantic/pydantic/issues/9992).
+
+## Plugin settings
+
+The plugin_settings configuration value passes options to Pydantic plugins (code that hooks into validation, usually for tooling that observes it rather than for changing validation behaviour). Its value is a dictionary keyed by plugin name, so a given plugin reads only its own entry.
+
+The main plugin in use today is [Logfire](../../integrations/logfire/)'s, which records validations for observability. You can tune what it records per model, for instance recording only failures for one particular model:
+
+```python
+from pydantic import BaseModel
+
+
+class User(BaseModel, plugin_settings={'logfire': {'record': 'failure'}}):
+    name: str
+    email: str
+
+```
 
 ## Configuration propagation
 
